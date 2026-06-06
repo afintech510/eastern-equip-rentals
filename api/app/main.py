@@ -51,11 +51,11 @@ async def lifespan(_app: FastAPI):
     if settings.environment == "production":
         if verdict is None:
             raise RuntimeError(
-                "Config completeness gate: Supabase not configured in production — refusing to boot."
+                "Config gate: Supabase not configured in production — refusing to boot."
             )
         if verdict is False:
             raise RuntimeError(
-                "Config completeness gate FAILED: config singleton incomplete — refusing to boot."
+                "Config gate FAILED: config singleton incomplete — refusing to boot."
             )
         logger.info("Config completeness gate passed.")
     else:

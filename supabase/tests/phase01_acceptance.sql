@@ -44,12 +44,14 @@ BEGIN
     RAISE NOTICE 'PASS B: same-day rebook blocked';
   END;
 
-  -- C) cancelled/expired rows must not block.
+  -- C) cancelled/expired rows must not block. Cancel r1 (Jun1-3), then book
+  -- Jun2-3 — overlaps ONLY the cancelled r1 (the active Jun4-6 row from A is
+  -- clear, since inclusive [Jun2,Jun3] and [Jun4,Jun6] do not overlap).
   UPDATE public.rentals SET status = 'cancelled' WHERE id = r1;
   BEGIN
     INSERT INTO public.rentals
       (customer_id, product_id, unit_id, start_date, end_date, rental_subtotal, total, booking_fee_amount, status)
-      VALUES (cust, prod, unit, DATE '2026-06-02', DATE '2026-06-04', 200, 200, 60, 'reserved');
+      VALUES (cust, prod, unit, DATE '2026-06-02', DATE '2026-06-03', 200, 200, 60, 'reserved');
     RAISE NOTICE 'PASS C: cancelled reservation does not block overlap';
   EXCEPTION WHEN exclusion_violation THEN
     RAISE EXCEPTION 'FAIL C: cancelled reservation still blocks';
