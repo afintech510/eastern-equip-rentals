@@ -1,0 +1,24 @@
+# Production override for the Hetzner VPS.
+# Attaches web + api to the shared reverse-proxy network so the host nginx
+# (project `hosthampton`) can resolve them by container name — same pattern as
+# the owner's maningo / benchworks stacks.
+#
+# Usage on the VPS:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+services:
+  web:
+    networks:
+      - eastern_net
+      - hampton_nginx
+
+  api:
+    networks:
+      - eastern_net
+      - hampton_nginx
+
+networks:
+  # Created by the hosthampton compose project. `external: true` means this
+  # stack joins it rather than creating it.
+  hampton_nginx:
+    external: true
+    name: hosthampton_hampton_net

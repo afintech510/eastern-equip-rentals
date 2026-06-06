@@ -1,0 +1,70 @@
+name: CI
+
+# Lint + type-check + build on every push and PR. Fast gate; no deploy.
+on:
+  push:
+    branches-ignore: []
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: Web (Next.js) — lint, build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Build
+        run: npm run build
+        env:
+          # Placeholder public vars so the build is deterministic in CI.
+          # Real values are injected at deploy time (Doppler) on the VPS.
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          NEXT_PUBLIC_BASE_URL: http://localhost:3009
+          NEXT_PUBLIC_API_URL: http://localhost:8009
+          NEXT_TELEMETRY_DISABLED: "1"
+
+  api:
+    name: API (FastAPI) — lint, import
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps + ruff
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt ruff
+
+      - name: Ruff lint
+        run: ruff check app
+
+      - name: Import smoke (app boots)
+        run: python -c "from app.main import app; print('api import OK')"

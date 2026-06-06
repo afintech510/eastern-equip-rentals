@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Industrial / Heavy-Equipment theme — §4.5 (APPROVED, LOCKED)
+   Ported verbatim from eastern_rentals_prototype_v1.html.
+   ============================================================ */
+
+@layer base {
+  /* Concrete-like noise texture on the page background */
+  body {
+    background-color: #d1d5db;
+    color: #111111;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+  }
+
+  /* Visible keyboard focus everywhere (a11y baseline, §4.2) */
+  :focus-visible {
+    outline: 3px solid #111111;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* ---- Hazard motifs ---- */
+  .hazard-stripes {
+    background: repeating-linear-gradient(
+      -45deg,
+      #ffcc00,
+      #ffcc00 15px,
+      #111111 15px,
+      #111111 30px
+    );
+  }
+
+  .hazard-stripes-light {
+    background: repeating-linear-gradient(
+      -45deg,
+      #d1d5db,
+      #d1d5db 10px,
+      #9ca3af 10px,
+      #9ca3af 20px
+    );
+  }
+
+  /* ---- Buttons (brutalist, press on :active) ---- */
+  .btn-primary {
+    @apply bg-ind-yellow text-ind-black font-heading text-2xl uppercase tracking-wide py-2 px-6 border-4 border-ind-black shadow-heavy transition-all duration-100;
+  }
+  .btn-primary:active {
+    @apply shadow-heavy-active translate-x-[6px] translate-y-[6px];
+  }
+  .btn-primary:disabled {
+    @apply bg-ind-steel text-gray-400 border-gray-500 shadow-none translate-x-0 translate-y-0 cursor-not-allowed opacity-80;
+  }
+
+  .btn-secondary {
+    @apply bg-ind-black text-ind-yellow font-heading text-xl uppercase tracking-wide py-2 px-6 border-4 border-ind-black shadow-heavy transition-all duration-100;
+  }
+  .btn-secondary:active {
+    @apply shadow-heavy-active translate-x-[6px] translate-y-[6px];
+  }
+
+  .btn-outline {
+    @apply bg-ind-white text-ind-black font-heading text-xl uppercase tracking-wide py-1 px-4 border-4 border-ind-black shadow-heavy-sm transition-all duration-100;
+  }
+  .btn-outline:active {
+    @apply shadow-heavy-active translate-x-[3px] translate-y-[3px];
+  }
+
+  /* ---- Surfaces ---- */
+  .card-ind {
+    @apply bg-ind-white border-4 border-ind-black shadow-heavy overflow-hidden relative;
+  }
+
+  .input-ind {
+    @apply bg-white border-4 border-ind-black p-3 font-mono text-lg rounded-none shadow-heavy-sm transition-colors focus:outline-none focus:bg-ind-yellow/10;
+  }
+
+  /* ---- AvailabilityCalendar (states wired now; grid built in Phase 02a) ---- */
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    background-color: #111111;
+    border: 4px solid #111111;
+  }
+  .cal-day {
+    @apply aspect-square flex flex-col items-center justify-center bg-ind-white font-mono text-lg font-bold cursor-pointer transition-colors relative;
+  }
+  .cal-day:hover:not(.booked):not(.past) {
+    @apply bg-ind-yellow border-2 border-ind-black;
+    z-index: 5;
+  }
+  .cal-day.booked {
+    @apply hazard-stripes-light text-ind-black cursor-not-allowed;
+  }
+  .cal-day.selected-start,
+  .cal-day.selected-end {
+    @apply bg-ind-black text-ind-yellow z-10 border-2 border-ind-yellow;
+  }
+  .cal-day.in-range {
+    @apply bg-ind-yellow text-ind-black;
+  }
+  .cal-day.past {
+    @apply bg-gray-300 text-gray-500 cursor-not-allowed;
+  }
+}
+
+/* ---- powerOn section transition (also available as `animate-powerOn`) ---- */
+@keyframes powerOn {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.98);
+    filter: brightness(2);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+    filter: brightness(1);
+  }
+}
+
+/* ---- Custom scrollbar (yellow thumb, black border) ---- */
+::-webkit-scrollbar {
+  width: 14px;
+}
+::-webkit-scrollbar-track {
+  background: #d1d5db;
+  border-left: 4px solid #111111;
+}
+::-webkit-scrollbar-thumb {
+  background: #ffcc00;
+  border: 4px solid #111111;
+}
