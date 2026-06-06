@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eastern Rentals | Center Moriches, NY</title>
+    
+    <!-- Load Industrial Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Saira:wght@400;600;700&family=Share+Tech+Mono&family=Teko:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configure Tailwind to match Industrial Theme -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ind-yellow': '#FFCC00',   // Safety/CAT yellow
+                        'ind-black': '#111111',    // Steel/Asphalt black
+                        'ind-concrete': '#D1D5DB', // Concrete grey background
+                        'ind-steel': '#6B7280',    // Mid-grey for secondary UI
+                        'ind-danger': '#DC2626',   // Hazard red
+                        'ind-white': '#F3F4F6',    // Off-white paper/sheet metal
+                    },
+                    fontFamily: {
+                        'stencil': ['"Black Ops One"', 'cursive'],
+                        'heading': ['Teko', 'sans-serif'],
+                        'body': ['Saira', 'sans-serif'],
+                        'mono': ['"Share Tech Mono"', 'monospace'],
+                    },
+                    boxShadow: {
+                        'heavy': '6px 6px 0px 0px #111111',
+                        'heavy-sm': '3px 3px 0px 0px #111111',
+                        'heavy-active': '0px 0px 0px 0px #111111',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base styles and concrete texture */
+        body {
+            background-color: #D1D5DB;
+            color: #111111;
+            font-family: 'Saira', sans-serif;
+            /* Industrial concrete-like noise */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+        }
+
+        /* Hazard Stripes Utility */
+        .hazard-stripes {
+            background: repeating-linear-gradient(
+                -45deg,
+                #FFCC00,
+                #FFCC00 15px,
+                #111111 15px,
+                #111111 30px
+            );
+        }
+        
+        .hazard-stripes-light {
+            background: repeating-linear-gradient(
+                -45deg,
+                #D1D5DB,
+                #D1D5DB 10px,
+                #9CA3AF 10px,
+                #9CA3AF 20px
+            );
+        }
+
+        /* Reusable UI Components - Sharp, Blocky, Brutalist */
+        .btn-primary {
+            @apply bg-ind-yellow text-ind-black font-heading text-2xl uppercase tracking-wide py-2 px-6 border-4 border-ind-black shadow-heavy transition-all duration-100;
+        }
+        .btn-primary:active {
+            @apply shadow-heavy-active translate-x-[6px] translate-y-[6px];
+        }
+        .btn-primary:disabled {
+            @apply bg-ind-steel text-gray-400 border-gray-500 shadow-none translate-x-0 translate-y-0 cursor-not-allowed opacity-80;
+        }
+
+        .btn-secondary {
+            @apply bg-ind-black text-ind-yellow font-heading text-xl uppercase tracking-wide py-2 px-6 border-4 border-ind-black shadow-heavy transition-all duration-100;
+        }
+        .btn-secondary:active {
+            @apply shadow-heavy-active translate-x-[6px] translate-y-[6px];
+        }
+
+        .btn-outline {
+            @apply bg-ind-white text-ind-black font-heading text-xl uppercase tracking-wide py-1 px-4 border-4 border-ind-black shadow-heavy-sm transition-all duration-100;
+        }
+        .btn-outline:active {
+            @apply shadow-heavy-active translate-x-[3px] translate-y-[3px];
+        }
+        
+        .card-ind {
+            @apply bg-ind-white border-4 border-ind-black shadow-heavy overflow-hidden relative;
+        }
+
+        .input-ind {
+            @apply bg-white border-4 border-ind-black p-3 font-mono text-lg focus:outline-none focus:bg-ind-yellow/10 transition-colors rounded-none shadow-heavy-sm;
+        }
+
+        /* Calendar specific styles */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            background-color: #111111;
+            border: 4px solid #111111;
+        }
+        .cal-day {
+            @apply aspect-square flex flex-col items-center justify-center bg-ind-white font-mono text-lg font-bold cursor-pointer transition-colors relative;
+        }
+        .cal-day:hover:not(.booked):not(.past) { @apply bg-ind-yellow border-2 border-ind-black; z-index: 5; }
+        .cal-day.booked { @apply hazard-stripes-light text-ind-black cursor-not-allowed; }
+        .cal-day.selected-start, .cal-day.selected-end { @apply bg-ind-black text-ind-yellow z-10 border-2 border-ind-yellow; }
+        .cal-day.in-range { @apply bg-ind-yellow text-ind-black; }
+        .cal-day.past { @apply bg-gray-300 text-gray-500 cursor-not-allowed; }
+
+        /* View Management */
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: powerOn 0.3s cubic-bezier(0, 0, 0.2, 1); }
+
+        @keyframes powerOn {
+            0% { opacity: 0; transform: scaleY(0.98); filter: brightness(2); }
+            100% { opacity: 1; transform: scaleY(1); filter: brightness(1); }
+        }
+
+        /* Custom Scrollbar for a polished look */
+        ::-webkit-scrollbar { width: 14px; }
+        ::-webkit-scrollbar-track { background: #D1D5DB; border-left: 4px solid #111111; }
+        ::-webkit-scrollbar-thumb { background: #FFCC00; border: 4px solid #111111; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col relative pb-20 md:pb-0">
+
+    <header class="bg-ind-black text-ind-yellow border-b-8 border-ind-yellow sticky top-0 z-50">
+        <!-- Hazard stripe top edge -->
+        <div class="h-2 w-full hazard-stripes"></div>
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-4 cursor-pointer" onclick="app.navigate('catalog')" role="button" tabindex="0">
+                <!-- Industrial Gear Icon -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" class="text-ind-yellow animate-[spin_10s_linear_infinite]">
+                    <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+                </svg>
+                <div class="flex flex-col">
+                    <h1 class="font-stencil text-3xl md:text-4xl leading-none tracking-widest text-ind-yellow">EASTERN</h1>
+                    <span class="font-mono text-sm font-bold uppercase tracking-[0.2em] text-ind-white">Heavy Equip Rentals</span>
+                </div>
+            </div>
+            
+            <nav class="hidden md:flex gap-8 items-center">
+                <button onclick="app.navigate('catalog')" class="font-heading text-2xl uppercase tracking-wider text-ind-white hover:text-ind-yellow transition-colors">Inventory</button>
+                <button onclick="app.navigate('projects')" class="font-heading text-2xl uppercase tracking-wider text-ind-white hover:text-ind-yellow transition-colors">Job Guides</button>
+                <button onclick="app.navigate('account')" class="font-heading text-2xl uppercase tracking-wider text-ind-white hover:text-ind-yellow transition-colors">Active Jobs</button>
+                <div class="flex items-center gap-3 bg-ind-yellow text-ind-black px-4 py-1 border-2 border-ind-yellow">
+                    <span class="w-3 h-3 bg-ind-danger animate-pulse border border-ind-black"></span>
+                    <span class="text-lg font-heading uppercase font-bold tracking-wide">Yard: ONLINE</span>
+                </div>
+            </nav>
+
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden p-2 bg-ind-yellow text-ind-black border-4 border-ind-black shadow-heavy-sm" aria-label="Menu" onclick="alert('Menu opened (Stub)')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="3" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+    </header>
+
+    <main id="app-container" class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
+        
+        <!-- ==================== VIEW 1: CATALOG ==================== -->
+        <section id="view-catalog" class="view-section active">
+            <div class="mb-8 border-b-8 border-ind-black pb-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 bg-ind-white p-6 shadow-heavy relative">
+                <!-- Decorative Corner screw holes -->
+                <div class="absolute top-2 left-2 w-3 h-3 rounded-full bg-ind-concrete border-2 border-ind-black"></div>
+                <div class="absolute top-2 right-2 w-3 h-3 rounded-full bg-ind-concrete border-2 border-ind-black"></div>
+                <div class="absolute bottom-2 left-2 w-3 h-3 rounded-full bg-ind-concrete border-2 border-ind-black"></div>
+                <div class="absolute bottom-2 right-2 w-3 h-3 rounded-full bg-ind-concrete border-2 border-ind-black"></div>
+                
+                <div class="pl-4">
+                    <h2 class="font-heading text-5xl font-bold text-ind-black tracking-wide uppercase m-0 leading-none">Equipment Roster</h2>
+                    <p class="font-mono text-ind-steel mt-2 text-sm uppercase font-bold tracking-widest">>>> Select unit for spec sheets & deployment</p>
+                </div>
+                
+                <!-- Category Filters -->
+                <div class="flex flex-wrap gap-3" id="catalog-filters">
+                    <button class="btn-outline bg-ind-black text-ind-yellow border-ind-black" onclick="app.filterCatalog('all')">ALL UNITS</button>
+                    <button class="btn-outline" onclick="app.filterCatalog('earthmoving')">DIRT</button>
+                    <button class="btn-outline" onclick="app.filterCatalog('landscaping')">BRUSH</button>
+                    <button class="btn-outline" onclick="app.filterCatalog('pneumatic')">AIR / COMPRESSORS</button>
+                </div>
+            </div>
+
+            <div id="catalog-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Fleet Cards rendered via JS -->
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 1.5: SEO PROJECT HUB ==================== -->
+        <section id="view-projects" class="view-section">
+            <div class="mb-8 border-b-8 border-ind-black pb-4 bg-ind-black p-6 shadow-heavy relative text-ind-white">
+                <div class="absolute top-0 left-0 w-full h-2 hazard-stripes"></div>
+                <h2 class="font-heading text-5xl font-bold text-ind-yellow tracking-wide uppercase m-0 leading-none mt-2">Project Dispatch Guides</h2>
+                <p class="font-mono mt-2 text-sm uppercase font-bold tracking-widest text-ind-steel">>>> HIGH-PRIORITY TARGET JOBS & REQUIRED IRON</p>
+            </div>
+            <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Project cards injected via JS -->
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 1.6: SEO LANDING PAGE ==================== -->
+        <section id="view-landing" class="view-section">
+            <button onclick="app.navigate('projects')" class="mb-6 font-heading text-2xl uppercase flex items-center gap-2 hover:text-ind-danger transition-colors group tracking-wider bg-ind-white px-4 py-1 border-4 border-ind-black shadow-heavy-sm inline-flex">
+                <svg class="w-6 h-6 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Back to Hub
+            </button>
+            
+            <div class="bg-ind-white border-8 border-ind-black shadow-heavy mb-12 relative overflow-hidden">
+                <div class="absolute right-0 top-0 w-32 h-32 bg-ind-yellow opacity-20 transform rotate-45 translate-x-16 -translate-y-16"></div>
+                <div class="p-8 md:p-12 relative z-10">
+                    <span id="landing-keywords" class="font-mono text-xs font-bold uppercase tracking-widest bg-ind-black text-ind-yellow px-3 py-1 mb-4 inline-block">TARGET KEYWORDS</span>
+                    <h2 id="landing-title" class="font-heading text-5xl md:text-6xl font-bold uppercase tracking-wide leading-none mb-6">Job Title</h2>
+                    <p id="landing-desc" class="font-mono text-lg max-w-4xl border-l-4 border-ind-yellow pl-6 leading-relaxed bg-ind-concrete/50 py-4 pr-4"></p>
+                </div>
+            </div>
+
+            <h3 class="font-heading text-4xl uppercase tracking-wide mb-6 border-b-4 border-ind-black pb-2 inline-block">Recommended Hardware</h3>
+            <div id="landing-equipment-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                <!-- Relevant Fleet Cards injected here -->
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 2: EQUIPMENT DETAIL ==================== -->
+        <section id="view-detail" class="view-section">
+            <button onclick="app.navigate('catalog')" class="mb-6 font-heading text-2xl uppercase flex items-center gap-2 hover:text-ind-danger transition-colors group tracking-wider bg-ind-white px-4 py-1 border-4 border-ind-black shadow-heavy-sm inline-flex">
+                <svg class="w-6 h-6 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Abort & Return
+            </button>
+
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8" id="detail-content">
+                <!-- Content injected via JS -->
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 3: CHECKOUT ==================== -->
+        <section id="view-checkout" class="view-section max-w-4xl mx-auto">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="h-10 w-4 hazard-stripes border-2 border-ind-black"></div>
+                <h2 class="font-heading text-5xl font-bold uppercase tracking-wide">Deployment Authorization</h2>
+            </div>
+            
+            <div class="card-ind bg-ind-white p-0 mb-8 flex flex-col md:flex-row border-8">
+                
+                <!-- Left Column: Details -->
+                <div class="p-6 md:p-8 flex-grow border-b-4 md:border-b-0 md:border-r-4 border-ind-black">
+                    <div class="bg-ind-black text-ind-yellow font-mono text-sm px-3 py-1 inline-block mb-4 border-2 border-ind-yellow">ASSET SECURED</div>
+                    <h3 class="font-heading text-4xl uppercase mb-6 leading-none" id="checkout-item-name">Item Name</h3>
+                    
+                    <!-- Fulfillment Toggle -->
+                    <div class="bg-ind-concrete border-4 border-ind-black p-4 mb-8">
+                        <label class="font-heading text-2xl uppercase block mb-3 border-b-2 border-ind-black pb-1">Logistics Method</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <label class="cursor-pointer relative">
+                                <input type="radio" name="fulfillment" value="pickup" class="peer sr-only" checked onchange="app.toggleDelivery(false)">
+                                <div class="text-center p-4 border-4 border-ind-black bg-white peer-checked:bg-ind-yellow peer-checked:text-ind-black font-heading text-2xl uppercase transition-colors">
+                                    Will Call
+                                    <span class="block font-mono text-xs font-bold mt-1 opacity-80">Yard Pickup</span>
+                                </div>
+                                <div class="absolute -top-3 -right-3 w-6 h-6 bg-ind-black text-ind-yellow rounded-full hidden peer-checked:flex items-center justify-center font-bold">✓</div>
+                            </label>
+                            <label class="cursor-pointer relative">
+                                <input type="radio" name="fulfillment" value="delivery" class="peer sr-only" onchange="app.toggleDelivery(true)">
+                                <div class="text-center p-4 border-4 border-ind-black bg-white peer-checked:bg-ind-yellow peer-checked:text-ind-black font-heading text-2xl uppercase transition-colors">
+                                    Delivery
+                                    <span class="block font-mono text-xs font-bold mt-1 opacity-80">Site Drop-off</span>
+                                </div>
+                                <div class="absolute -top-3 -right-3 w-6 h-6 bg-ind-black text-ind-yellow rounded-full hidden peer-checked:flex items-center justify-center font-bold">✓</div>
+                            </label>
+                        </div>
+
+                        <div id="delivery-options" class="hidden mt-6 pt-4 border-t-4 border-ind-black border-dashed">
+                            <label class="block font-mono text-sm font-bold uppercase mb-2">Target Zone:</label>
+                            <div class="relative">
+                                <select id="delivery-town" class="input-ind w-full appearance-none pr-10" onchange="app.calculateTotals()">
+                                    <option value="" disabled selected>SELECT DROP ZONE...</option>
+                                    <option value="15">Center Moriches (+$15)</option>
+                                    <option value="25">Mastic / Shirley (+$25)</option>
+                                    <option value="30">East Moriches (+$30)</option>
+                                    <option value="45">Manorville (+$45)</option>
+                                    <option value="50">Eastport (+$50)</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 bg-ind-black text-ind-yellow border-4 border-l-0 border-ind-black">
+                                    ▼
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Deposit Warning -->
+                    <div class="bg-ind-danger/10 border-4 border-ind-danger p-4 flex gap-4">
+                        <div class="text-ind-danger">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        </div>
+                        <div class="font-mono text-sm">
+                            <span class="font-bold text-ind-danger uppercase block mb-1">Mandatory Security Hold</span>
+                            A separate $500.00 authorization will hold on your card. Released pending equipment inspection upon return.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Receipt -->
+                <div class="p-6 md:p-8 bg-ind-black text-ind-yellow md:w-80 flex flex-col justify-between font-mono">
+                    <div>
+                        <h4 class="text-xl uppercase font-bold border-b-2 border-ind-yellow border-dashed pb-2 mb-4">Invoice Estimate</h4>
+                        
+                        <div class="space-y-4 text-sm">
+                            <div>
+                                <div class="text-ind-steel text-xs uppercase">Operational Window</div>
+                                <div class="font-bold" id="checkout-dates">JUN 10 - JUN 12</div>
+                            </div>
+                            
+                            <div class="border-t border-ind-steel pt-4">
+                                <div class="flex justify-between">
+                                    <span>Rate (<span id="checkout-days-count">3</span>D)</span>
+                                    <span id="checkout-subtotal">$750.00</span>
+                                </div>
+                                <div class="flex justify-between text-ind-danger hidden mt-1" id="checkout-discount-row">
+                                    <span>VOL DISC (10%)</span>
+                                    <span id="checkout-discount">-$75.00</span>
+                                </div>
+                            </div>
+
+                            <div class="border-t border-ind-steel pt-4">
+                                <div class="flex justify-between hidden" id="checkout-delivery-row">
+                                    <span>Freight</span>
+                                    <span id="checkout-delivery-fee">$0.00</span>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span>NYS Tax (8.625%)</span>
+                                    <span id="checkout-tax">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 border-t-4 border-ind-yellow pt-4">
+                        <div class="text-xs text-ind-steel uppercase mb-1">Total Due to Dispatch</div>
+                        <div class="font-heading text-5xl tracking-wide" id="checkout-total">$0.00</div>
+                        
+                        <button onclick="app.processPayment()" class="w-full mt-6 bg-ind-yellow text-ind-black font-heading text-2xl uppercase py-3 px-4 hover:bg-white transition-colors flex justify-center items-center gap-2 relative overflow-hidden group">
+                            <span class="relative z-10">INITIATE CHARGE</span>
+                            <div class="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform z-0"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 4: CONFIRMATION / NEXT STEPS ==================== -->
+        <section id="view-confirmation" class="view-section max-w-3xl mx-auto">
+            <div class="border-8 border-ind-black bg-ind-white p-8 relative overflow-hidden shadow-heavy">
+                <!-- Hazard Header -->
+                <div class="absolute top-0 left-0 w-full h-4 hazard-stripes"></div>
+                
+                <div class="text-center mt-6 mb-10">
+                    <h2 class="font-stencil text-5xl md:text-6xl text-ind-black mb-2 tracking-wide">ORDER LOGGED</h2>
+                    <p class="font-mono text-xl font-bold bg-ind-black text-ind-yellow inline-block px-4 py-1">REF: #ER-8492</p>
+                </div>
+
+                <div class="bg-ind-concrete border-4 border-ind-black p-6 mb-8">
+                    <h3 class="font-heading text-3xl uppercase border-b-4 border-ind-black pb-2 mb-4">Clearance Protocol</h3>
+                    <p class="font-mono text-sm mb-6">Dispatch cannot release equipment until all compliance requirements are verified. Complete digital forms below.</p>
+
+                    <div class="space-y-3 font-mono">
+                        <!-- Step 1: Payment (Pre-done) -->
+                        <div class="flex items-center gap-4 p-4 border-4 border-ind-black bg-ind-black text-ind-steel">
+                            <div class="w-8 h-8 bg-ind-steel flex items-center justify-center flex-shrink-0 text-ind-black font-bold">✓</div>
+                            <div class="flex-grow">
+                                <span class="font-bold uppercase tracking-widest text-ind-white block">Funds Cleared</span>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: License -->
+                        <div id="task-license" class="flex flex-col md:flex-row items-start md:items-center gap-4 p-4 border-4 border-ind-black bg-white transition-colors">
+                            <div class="w-8 h-8 border-4 border-ind-black flex items-center justify-center flex-shrink-0 task-icon font-bold text-ind-black"></div>
+                            <div class="flex-grow">
+                                <span class="font-bold uppercase tracking-widest text-lg block leading-none mb-1">Operator ID</span>
+                                <span class="text-xs text-ind-steel uppercase task-status-text">Require valid license upload.</span>
+                            </div>
+                            <button onclick="app.completeTask('license')" class="btn-outline whitespace-nowrap mt-2 md:mt-0 task-btn text-sm">TRANSMIT FILE</button>
+                        </div>
+
+                        <!-- Step 3: Contract -->
+                        <div id="task-contract" class="flex flex-col md:flex-row items-start md:items-center gap-4 p-4 border-4 border-ind-black bg-white transition-colors">
+                            <div class="w-8 h-8 border-4 border-ind-black flex items-center justify-center flex-shrink-0 task-icon font-bold text-ind-black"></div>
+                            <div class="flex-grow">
+                                <span class="font-bold uppercase tracking-widest text-lg block leading-none mb-1">Rental Agreement</span>
+                                <span class="text-xs text-ind-steel uppercase task-status-text">Standard terms of service.</span>
+                            </div>
+                            <button onclick="app.completeTask('contract')" class="btn-outline whitespace-nowrap mt-2 md:mt-0 task-btn text-sm">SIGN DIGITALLY</button>
+                        </div>
+
+                        <!-- Step 4: Waiver -->
+                        <div id="task-waiver" class="flex flex-col md:flex-row items-start md:items-center gap-4 p-4 border-4 border-ind-black bg-white transition-colors">
+                            <div class="w-8 h-8 border-4 border-ind-black flex items-center justify-center flex-shrink-0 task-icon font-bold text-ind-black"></div>
+                            <div class="flex-grow">
+                                <span class="font-bold uppercase tracking-widest text-lg block leading-none mb-1">Liability Waiver</span>
+                                <span class="text-xs text-ind-steel uppercase task-status-text">Heavy machinery risk acceptance.</span>
+                            </div>
+                            <button onclick="app.completeTask('waiver')" class="btn-outline whitespace-nowrap mt-2 md:mt-0 task-btn text-sm">SIGN WAIVER</button>
+                        </div>
+                    </div>
+
+                    <div id="all-set-msg" class="hidden mt-8 text-center bg-ind-yellow border-4 border-ind-black p-4">
+                        <h4 class="font-stencil text-2xl text-ind-black">CLEARANCE GRANTED</h4>
+                        <p class="font-mono text-sm font-bold mt-1">Equipment ready for deployment timeline.</p>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <button onclick="app.navigate('account')" class="font-heading text-2xl uppercase tracking-widest text-ind-black hover:bg-ind-black hover:text-ind-yellow px-4 py-2 border-4 border-transparent hover:border-ind-black transition-colors">>>> Access Active Jobs <<<</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 5: ACCOUNT ==================== -->
+        <section id="view-account" class="view-section max-w-5xl mx-auto">
+            <h2 class="font-heading text-5xl font-bold mb-6 border-b-8 border-ind-black pb-2 uppercase tracking-wide">Active Deployments</h2>
+            
+            <div class="space-y-8" id="account-rentals-list">
+                <!-- Current Mock Rental -->
+                <div class="card-ind p-0 border-l-[16px] border-l-ind-yellow">
+                    <div class="p-6">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b-4 border-ind-black pb-4">
+                            <div>
+                                <span class="bg-ind-black text-ind-yellow font-mono text-xs font-bold px-2 py-1 uppercase tracking-widest border-2 border-ind-black">STATUS: PENDING PICKUP</span>
+                                <h3 class="font-heading text-3xl font-bold mt-3 uppercase tracking-wide">Bobcat S590 Skid Steer</h3>
+                                <p class="font-mono font-bold text-ind-steel mt-1">JUN 10, 2026 - JUN 12, 2026</p>
+                            </div>
+                            <div class="text-left md:text-right font-mono bg-ind-concrete p-3 border-4 border-ind-black">
+                                <span class="text-xs uppercase text-ind-steel block">Total Value</span>
+                                <span class="font-bold text-2xl block text-ind-black">$750.00</span>
+                                <span class="text-xs uppercase bg-ind-black text-ind-white px-2 mt-1 inline-block">PAID IN FULL</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-ind-danger/10 p-4 border-4 border-ind-danger flex items-start gap-4">
+                            <div class="text-ind-danger mt-1">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            </div>
+                            <div>
+                                <span class="font-mono font-bold text-ind-danger uppercase tracking-wide block">Compliance Hold</span>
+                                <span class="font-mono text-sm">Action Required: Digital signatures missing. Asset locked until completion.</span>
+                            </div>
+                            <button class="ml-auto btn-outline text-sm bg-white" onclick="app.navigate('confirmation')">RESOLVE</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Past Mock Rental -->
+                <div class="card-ind p-6 bg-ind-concrete border-ind-steel opacity-70 grayscale">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <span class="bg-ind-steel text-white font-mono text-xs font-bold px-2 py-1 uppercase tracking-widest">STATUS: RETURNED</span>
+                            <h3 class="font-heading text-3xl font-bold mt-3 uppercase tracking-wide text-ind-black">10 Yard Dumpster</h3>
+                            <p class="font-mono text-sm font-bold text-ind-steel mt-1">APR 4, 2026 - APR 11, 2026</p>
+                        </div>
+                        <button class="btn-outline text-sm">DOWNLOAD MANIFEST</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-ind-black text-ind-white border-t-[16px] border-ind-yellow mt-16 relative">
+        <div class="h-4 w-full hazard-stripes absolute top-0 left-0 -translate-y-full border-t-8 border-ind-black"></div>
+        <div class="max-w-7xl mx-auto px-4 py-16 grid grid-cols-1 md:grid-cols-3 gap-12 border-b-4 border-ind-steel">
+            <div>
+                <h3 class="font-stencil text-3xl mb-4 text-ind-yellow tracking-widest">EASTERN RENTALS</h3>
+                <p class="font-mono text-sm text-ind-steel max-w-sm uppercase leading-relaxed">Industrial grade machinery & attachments. Supplying eastern Long Island contractors and serious builders since 1982.</p>
+            </div>
+            <div>
+                <h4 class="font-heading text-2xl uppercase tracking-wider mb-4 border-b-2 border-ind-steel pb-2 inline-block">Dispatch / Yard</h4>
+                <address class="font-mono not-italic text-sm text-ind-steel space-y-2 uppercase">
+                    <p>420 Montauk Highway</p>
+                    <p>Center Moriches, NY 11934</p>
+                    <p class="pt-4 text-ind-white font-bold">OP HOURS: MON-SAT 0600 - 1700</p>
+                    <p>SUN: SYSTEM OFFLINE</p>
+                </address>
+            </div>
+            <div>
+                <h4 class="font-heading text-2xl uppercase tracking-wider mb-4 border-b-2 border-ind-steel pb-2 inline-block">Direct Comm Line</h4>
+                <p class="font-mono text-sm text-ind-steel mb-3 uppercase">Ask for Dispatcher Tommy.</p>
+                <a href="#" class="font-heading text-4xl text-ind-yellow hover:text-white transition-colors tracking-widest block bg-ind-white/10 px-4 py-2 border-2 border-ind-steel inline-block">(631) 555-0199</a>
+            </div>
+        </div>
+        <div class="text-center py-6 font-mono text-xs text-ind-steel uppercase tracking-widest">
+            SYSTEM VERSION 4.2.0 // EASTERN RENTALS PROTOTYPE
+        </div>
+    </footer>
+
+    <!-- AI Dispatch Panel (Gemini Integration) -->
+    <div id="ai-dispatch-panel" class="fixed right-0 top-0 h-full w-full md:w-[450px] bg-ind-concrete border-l-[12px] border-ind-yellow transform translate-x-full transition-transform duration-300 z-[60] flex flex-col shadow-[-8px_0_0_rgba(17,17,17,1)]">
+        <div class="p-4 border-b-8 border-ind-black bg-ind-black hazard-stripes relative">
+            <div class="absolute inset-0 bg-ind-black/80"></div>
+            <div class="relative z-10 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <span class="w-4 h-4 bg-ind-danger animate-pulse border-2 border-ind-black"></span>
+                    <div>
+                        <h3 class="font-heading text-3xl text-ind-yellow uppercase tracking-widest m-0 leading-none">Dispatcher Tommy</h3>
+                        <span class="font-mono text-[10px] text-ind-white tracking-[0.2em] uppercase">AI YARD ASSISTANT</span>
+                    </div>
+                </div>
+                <button onclick="app.toggleChat()" class="btn-primary py-1 px-3 text-lg border-2 bg-ind-white">X</button>
+            </div>
+        </div>
+        
+        <div id="chat-history" class="flex-grow p-4 overflow-y-auto space-y-4 font-mono text-sm bg-ind-concrete bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%221.2%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.05%22/%3E%3C/svg%3E')]">
+            <div class="bg-ind-white border-4 border-ind-black p-4 text-ind-black w-[90%] shadow-heavy-sm relative">
+                <div class="absolute -left-2 top-4 w-4 h-4 bg-ind-white border-t-4 border-l-4 border-ind-black rotate-[-45deg]"></div>
+                <span class="text-xs text-ind-steel font-bold block mb-2 border-b-2 border-ind-steel/30 pb-1 uppercase tracking-widest">TOMMY [SYSTEM]</span>
+                What's the job? Tell me what you're trying to do, and I'll tell you what iron you need to pull from the yard.
+            </div>
+        </div>
+        
+        <div class="p-4 border-t-8 border-ind-black bg-ind-concrete flex gap-2">
+            <input type="text" id="chat-input" class="input-ind flex-grow text-sm py-3" placeholder="e.g. Need to rip out tree roots..." onkeypress="if(event.key === 'Enter') app.sendChat()">
+            <button onclick="app.sendChat()" class="btn-primary py-2 px-4 text-xl flex items-center justify-center">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="3" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Floating Action Button for AI -->
+    <button onclick="app.toggleChat()" class="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-[55] bg-ind-black text-ind-yellow border-4 border-ind-yellow shadow-heavy p-4 rounded-none hover:bg-ind-yellow hover:text-ind-black hover:border-ind-black transition-all duration-200 group flex items-center gap-3">
+        <svg class="w-8 h-8 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+        <span class="hidden md:block font-heading tracking-widest text-xl uppercase mt-1">Ask Dispatch</span>
+        <span class="absolute -top-4 -left-4 bg-ind-danger text-white text-[10px] font-mono font-bold px-2 py-1 border-2 border-ind-black rotate-[-10deg] shadow-heavy-sm z-10 animate-pulse">AI ASSIST</span>
+    </button>
+
+    <!-- Mobile Bottom Nav -->
+    <div class="md:hidden fixed bottom-0 left-0 w-full bg-ind-black border-t-4 border-ind-yellow text-ind-white flex justify-around p-2 z-50">
+        <button onclick="app.navigate('catalog')" class="flex flex-col items-center gap-1 opacity-70 hover:opacity-100 hover:text-ind-yellow transition-colors w-1/2 border-r-2 border-ind-steel">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            <span class="font-mono text-[10px] font-bold uppercase tracking-widest">Inventory</span>
+        </button>
+        <button onclick="app.navigate('account')" class="flex flex-col items-center gap-1 opacity-70 hover:opacity-100 hover:text-ind-yellow transition-colors w-1/2">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+            <span class="font-mono text-[10px] font-bold uppercase tracking-widest">Active Jobs</span>
+        </button>
+    </div>
+
+    <script>
+        // --- 1. MOCK DATA ---
+        // Image placeholders updated to match industrial scheme: Black background, Yellow text
+        const fleet = [
+            { id: 'skid1', name: 'Bobcat S590 Skid Steer', type: 'earthmoving', rate: 250, img: 'https://placehold.co/600x400/111111/FFCC00?text=S590&font=oswald', desc: '74hp, 2000lb operating capacity. Industry standard for tight grading.', specs: ['Operating Wt: 6,700 lbs', 'Width: 68 in', 'Fuel: Diesel (Off-Road)'] },
+            { id: 'skid2', name: 'Cat 259D3 Track Loader', type: 'earthmoving', rate: 310, img: 'https://placehold.co/600x400/111111/FFCC00?text=259D3&font=oswald', desc: '74hp on rubber tracks. Superior traction for muddy sites.', specs: ['Operating Wt: 8,900 lbs', 'Width: 66 in', 'Fuel: Diesel (Off-Road)'] },
+            { id: 'exc', name: 'Kubota KX040 Excavator', type: 'earthmoving', rate: 285, img: 'https://placehold.co/600x400/111111/FFCC00?text=KX040&font=oswald', desc: '10ft dig depth. Enclosed cab with climate control.', specs: ['Operating Wt: 9,000 lbs', 'Max Dig Depth: 11.2 ft', 'Fuel: Diesel'] },
+            { id: 'chipper', name: 'Bandit 12XPT Chipper', type: 'landscaping', rate: 220, img: 'https://placehold.co/600x400/111111/FFCC00?text=12XPT&font=oswald', desc: '12-inch capacity drum chipper. Towable w/ 2-inch ball/pintle.', specs: ['Max Cap: 12 in', 'Weight: 4,800 lbs', 'Hitch: Pintle/Ball Combo'] },
+            { id: 'stump', name: 'Toro STX-26 Grinder', type: 'landscaping', rate: 180, img: 'https://placehold.co/600x400/111111/FFCC00?text=STX-26&font=oswald', desc: 'Track-drive stump grinder. 34-inch width fits through gates.', specs: ['Width: 34 in', 'Cut Depth: 12.5 in', 'Controls: Intelli-Sweep'] },
+            { id: 'mixer', name: 'Concrete Mixer (Towable)', type: 'all', rate: 95, img: 'https://placehold.co/600x400/111111/FFCC00?text=MIX-9&font=oswald', desc: '9 cubic foot capacity. Honda GX gas engine.', specs: ['Drum Vol: 9 cu ft', 'Power: Honda 8hp Gas', 'Tow: 2-inch ball'] },
+            { id: 'comp1', name: '185 CFM Towable Air Compressor', type: 'pneumatic', rate: 145, img: 'https://placehold.co/600x400/111111/FFCC00?text=185+CFM&font=oswald', desc: 'Industrial high-volume air. Required for commercial/residential sprinkler blowouts and heavy pneumatic tools.', specs: ['Airflow: 185 CFM', 'Pressure: 100 PSI', 'Power: Diesel Engine', 'Hitch: Pintle Ring'] }
+        ];
+
+        // SEO/Intent Landing Pages Data
+        const seoGuides = [
+            { 
+                id: 'sprinkler-blowouts', 
+                title: 'Winterize Sprinklers: Air Compressor Rentals', 
+                intent: 'rent air compressor for sprinkler blowout Long Island, Center Moriches', 
+                desc: 'CRITICAL PREVENTATIVE MAINTENANCE: Do not let cracked underground pipes ruin your spring. Rent an industrial-grade, high-CFM towable air compressor to blow out your irrigation lines fast and completely. Ideal for landscapers clearing multiple properties efficiently or homeowners with large multi-zone systems. Note: High VOLUME (CFM) air is required to properly evacuate water from long lines, not just high pressure (PSI). Our 185 CFM units push the water out before it can settle.', 
+                equipment: ['comp1'] 
+            },
+            { 
+                id: 'lot-clearing', 
+                title: 'Heavy Duty Brush & Lot Clearing Equipment', 
+                intent: 'rent stump grinder, wood chipper rental near me, skid steer land clearing', 
+                desc: 'SITE PREP & RECLAMATION: Taking back a yard or job site from overgrown brush, dead trees, and stubborn stumps requires heavy metal. We supply professional-grade 12-inch capacity drum chippers, track-driven stump grinders that fit through standard gates, and track loaders with superior traction for muddy clearing operations. Get the job done in hours instead of weekends.', 
+                equipment: ['skid2', 'chipper', 'stump'] 
+            },
+            { 
+                id: 'concrete-prep', 
+                title: 'Driveway & Concrete Prep Machinery', 
+                intent: 'rent towable concrete mixer, excavator rental for driveway, skid steer grading', 
+                desc: 'HARDSCAPE INFRASTRUCTURE: From ripping out cracked asphalt to pouring a fresh 6-inch reinforced slab, you need reliable earthmoving iron. Deploy our mini excavators for tearing out old material, wheeled skid steers for fast, precise sub-grade leveling, and towable 9-cubic-foot mixers for the final pour. Commercial grade specs for structural integrity.', 
+                equipment: ['exc', 'skid1', 'mixer'] 
+            }
+        ];
+
+        const mockCalendarDays = 30;
+        const mockStartDayOffset = 1; // 1=Mon start
+        const bookedDates = [5, 6, 7, 14, 15, 22]; 
+
+        // --- 2. APPLICATION STATE ---
+        const state = {
+            currentView: 'catalog',
+            selectedItemId: null,
+            booking: {
+                startDay: null,
+                endDay: null,
+                days: 0,
+                isDelivery: false,
+                deliveryFee: 0,
+                subtotal: 0,
+                tax: 0,
+                total: 0
+            },
+            calSelectingStep: 0,
+            tasks: { license: false, contract: false, waiver: false }
+        };
+
+        // --- 3. CORE LOGIC & RENDERING ---
+        const app = {
+            
+            // --- AI GEMINI INTEGRATION ---
+            toggleChat() {
+                const panel = document.getElementById('ai-dispatch-panel');
+                if(panel.classList.contains('translate-x-full')) {
+                    panel.classList.remove('translate-x-full');
+                    setTimeout(() => document.getElementById('chat-input').focus(), 300);
+                } else {
+                    panel.classList.add('translate-x-full');
+                }
+            },
+
+            async sendChat() {
+                const input = document.getElementById('chat-input');
+                const text = input.value.trim();
+                if(!text) return;
+                
+                const history = document.getElementById('chat-history');
+                
+                // 1. Append User Message
+                history.innerHTML += `
+                    <div class="bg-ind-yellow border-4 border-ind-black p-4 text-ind-black w-[90%] ml-auto shadow-heavy-sm relative">
+                        <div class="absolute -right-2 top-4 w-4 h-4 bg-ind-yellow border-t-4 border-r-4 border-ind-black rotate-[45deg]"></div>
+                        <span class="text-xs font-bold block mb-2 border-b-2 border-ind-black/30 pb-1 uppercase tracking-widest text-right">YOU [SITE]</span>
+                        ${text}
+                    </div>
+                `;
+                input.value = '';
+                history.scrollTop = history.scrollHeight;
+                
+                // 2. Append Loading Indicator
+                const loadingId = 'loading-' + Date.now();
+                history.innerHTML += `
+                    <div id="${loadingId}" class="bg-ind-white border-4 border-ind-black p-4 text-ind-black w-[90%] shadow-heavy-sm relative">
+                        <div class="absolute -left-2 top-4 w-4 h-4 bg-ind-white border-t-4 border-l-4 border-ind-black rotate-[-45deg]"></div>
+                        <span class="text-xs text-ind-steel font-bold block mb-2 border-b-2 border-ind-steel/30 pb-1 uppercase tracking-widest">TOMMY [SYSTEM]</span>
+                        <div class="flex items-center gap-2 font-bold animate-pulse">
+                            <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            RADIOING YARD...
+                        </div>
+                    </div>
+                `;
+                history.scrollTop = history.scrollHeight;
+
+                // 3. Construct API Call to Gemini
+                try {
+                    const apiKey = ""; // Left empty as per Canvas runtime requirements
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                    
+                    // Give the LLM context of our actual inventory so it doesn't hallucinate equipment we don't have
+                    const fleetInfo = fleet.map(f => `- ${f.name} (ID: ${f.id}, $${f.rate}/day): ${f.desc}`).join("\n");
+                    
+                    const systemPrompt = `You are Tommy, the grizzled, practical, no-nonsense dispatcher at Eastern Rentals in Center Moriches, NY. 
+                    A customer is describing a job they need to do. Recommend the best piece of equipment from our active yard inventory.
+                    
+                    OUR INVENTORY:
+                    ${fleetInfo}
+                    
+                    RULES:
+                    1. Keep it blue-collar, direct, and under 3 sentences.
+                    2. Emphasize a quick safety or usage tip.
+                    3. ALWAYS strictly recommend an item from our inventory list above. Do not suggest equipment we do not have.
+                    4. If they mention winterizing, sprinklers, blowing out lines, or pneumatic tools, aggressively recommend the 185 CFM Towable Air Compressor.
+                    5. Format the name of the recommended machine in ALL CAPS.`;
+                    
+                    const payload = {
+                        contents: [{ parts: [{ text }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] }
+                    };
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+                    
+                    let replyText = "Radio's cutting out, we got a bad connection. Say that again?";
+                    if (result.candidates && result.candidates[0] && result.candidates[0].content) {
+                        replyText = result.candidates[0].content.parts[0].text;
+                    }
+                    
+                    // Remove loading and append response
+                    document.getElementById(loadingId).remove();
+                    history.innerHTML += `
+                        <div class="bg-ind-white border-4 border-ind-black p-4 text-ind-black w-[90%] shadow-heavy-sm relative">
+                            <div class="absolute -left-2 top-4 w-4 h-4 bg-ind-white border-t-4 border-l-4 border-ind-black rotate-[-45deg]"></div>
+                            <span class="text-xs text-ind-steel font-bold block mb-2 border-b-2 border-ind-steel/30 pb-1 uppercase tracking-widest">TOMMY [SYSTEM]</span>
+                            ${replyText.replace(/\n/g, '<br>')}
+                        </div>
+                    `;
+                    history.scrollTop = history.scrollHeight;
+
+                } catch (e) {
+                    console.error("LLM Error:", e);
+                    document.getElementById(loadingId).remove();
+                    history.innerHTML += `
+                        <div class="bg-ind-danger/20 border-4 border-ind-danger p-4 text-ind-black w-[90%] shadow-heavy-sm">
+                            <span class="text-xs text-ind-danger font-bold block mb-2 border-b-2 border-ind-danger/30 pb-1 uppercase tracking-widest">SYSTEM ERROR</span>
+                            Comm link failed. Check local network connection.
+                        </div>
+                    `;
+                }
+            },
+
+            init() {
+                this.renderCatalog('all');
+                this.renderProjectsList();
+                window.addEventListener('hashchange', () => {
+                    const hash = window.location.hash.replace('#', '');
+                    if(hash) {
+                        if(hash.startsWith('landing-')) {
+                            this.renderLandingPage(hash.replace('landing-', ''));
+                        } else {
+                            this.navigate(hash, false);
+                        }
+                    }
+                });
+                if(window.location.hash) {
+                    const hash = window.location.hash.replace('#', '');
+                    if(hash.startsWith('landing-')) {
+                        this.renderLandingPage(hash.replace('landing-', ''), false);
+                    } else {
+                        this.navigate(hash, false);
+                    }
+                }
+            },
+
+            navigate(viewId, updateHash = true) {
+                document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+                const target = document.getElementById(`view-${viewId}`);
+                if(target) {
+                    target.classList.add('active');
+                    state.currentView = viewId;
+                    if(updateHash) window.location.hash = viewId;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            },
+
+            renderCatalog(filterType) {
+                const grid = document.getElementById('catalog-grid');
+                grid.innerHTML = '';
+                
+                document.querySelectorAll('#catalog-filters button').forEach(btn => {
+                    btn.classList.remove('bg-ind-black', 'text-ind-yellow');
+                    btn.classList.add('bg-ind-white', 'text-ind-black');
+                    if(btn.innerText.toLowerCase() === filterType || (filterType==='all' && btn.innerText==='ALL UNITS')) {
+                        btn.classList.remove('bg-ind-white', 'text-ind-black');
+                        btn.classList.add('bg-ind-black', 'text-ind-yellow');
+                    }
+                });
+
+                const filtered = filterType === 'all' ? fleet : fleet.filter(f => f.type === filterType || f.type === 'all');
+
+                filtered.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'card-ind flex flex-col cursor-pointer group hover:border-ind-yellow transition-colors';
+                    card.onclick = () => this.openDetail(item.id);
+                    card.innerHTML = `
+                        <div class="h-56 border-b-4 border-ind-black relative bg-ind-black overflow-hidden p-2">
+                            <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMiIgZmlsbD0iIzMzMyIvPjwvc3ZnPg==')] opacity-30 z-0"></div>
+                            <img src="${item.img}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 relative z-10 border-2 border-ind-black mix-blend-screen grayscale group-hover:grayscale-0">
+                            <div class="absolute top-4 right-4 bg-ind-yellow text-ind-black font-mono text-xs font-bold px-3 py-1 border-2 border-ind-black shadow-heavy-sm z-20 uppercase tracking-widest">Deployable</div>
+                        </div>
+                        <div class="p-6 flex flex-col flex-grow bg-ind-white">
+                            <h3 class="font-heading text-3xl mb-1 uppercase tracking-wide leading-none">${item.name}</h3>
+                            <p class="font-mono text-sm text-ind-steel mb-6 flex-grow leading-relaxed">${item.desc}</p>
+                            <div class="flex justify-between items-end pt-4 border-t-4 border-ind-black">
+                                <div class="bg-ind-concrete border-2 border-ind-black px-3 py-1">
+                                    <span class="font-mono text-xs font-bold uppercase tracking-widest text-ind-steel block">Base Rate</span>
+                                    <div class="font-heading text-3xl leading-none">$${item.rate}<span class="text-sm font-mono text-ind-steel tracking-normal">/DAY</span></div>
+                                </div>
+                                <button class="btn-outline group-hover:bg-ind-yellow group-hover:text-ind-black pointer-events-none">SPECS >></button>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            },
+
+            renderProjectsList() {
+                const grid = document.getElementById('projects-grid');
+                grid.innerHTML = '';
+                
+                seoGuides.forEach(guide => {
+                    const card = document.createElement('div');
+                    card.className = 'card-ind flex flex-col group cursor-pointer border-4 hover:border-ind-yellow transition-colors';
+                    card.onclick = () => {
+                        this.renderLandingPage(guide.id);
+                        window.location.hash = `landing-${guide.id}`;
+                    };
+                    card.innerHTML = `
+                        <div class="bg-ind-black p-4 hazard-stripes">
+                            <span class="bg-ind-white text-ind-black font-mono text-xs font-bold px-2 py-1 uppercase tracking-widest border-2 border-ind-black">JOB PROFILE</span>
+                        </div>
+                        <div class="p-6 bg-ind-white flex-grow flex flex-col">
+                            <h3 class="font-heading text-3xl uppercase tracking-wide leading-none mb-3 group-hover:text-ind-yellow group-hover:drop-shadow-[2px_2px_0_rgba(17,17,17,1)] transition-all">${guide.title}</h3>
+                            <p class="font-mono text-xs text-ind-steel uppercase line-clamp-3 mb-6">${guide.desc}</p>
+                            <button class="btn-outline mt-auto text-sm self-start group-hover:bg-ind-yellow group-hover:text-ind-black">VIEW PROTOCOL >></button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            },
+
+            renderLandingPage(guideId, updateHash = true) {
+                const guide = seoGuides.find(g => g.id === guideId);
+                if(!guide) return;
+
+                document.getElementById('landing-title').innerText = guide.title;
+                document.getElementById('landing-desc').innerText = guide.desc;
+                document.getElementById('landing-keywords').innerText = `SEARCH INTENT // ${guide.intent}`;
+
+                const grid = document.getElementById('landing-equipment-grid');
+                grid.innerHTML = '';
+                
+                const relevantEquipment = fleet.filter(f => guide.equipment.includes(f.id));
+                
+                relevantEquipment.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'card-ind flex flex-col cursor-pointer group hover:border-ind-yellow transition-colors';
+                    card.onclick = () => this.openDetail(item.id);
+                    card.innerHTML = `
+                        <div class="h-48 border-b-4 border-ind-black relative bg-ind-black overflow-hidden p-2">
+                            <img src="${item.img}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 relative z-10 border-2 border-ind-black mix-blend-screen grayscale group-hover:grayscale-0">
+                        </div>
+                        <div class="p-6 flex flex-col flex-grow bg-ind-white">
+                            <h3 class="font-heading text-2xl mb-1 uppercase tracking-wide leading-none">${item.name}</h3>
+                            <div class="font-heading text-3xl leading-none mt-2">$${item.rate}<span class="text-sm font-mono text-ind-steel tracking-normal">/DAY</span></div>
+                            <button class="btn-outline group-hover:bg-ind-yellow group-hover:text-ind-black mt-4 pointer-events-none">DEPLOY UNIT</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                this.navigate('landing', false);
+                if(updateHash) window.location.hash = `landing-${guideId}`;
+            },
+
+            filterCatalog(type) {
+                this.renderCatalog(type);
+            },
+
+            openDetail(id) {
+                const item = fleet.find(f => f.id === id);
+                if(!item) return;
+                state.selectedItemId = id;
+                
+                state.booking.startDay = null;
+                state.booking.endDay = null;
+                state.booking.days = 0;
+                state.calSelectingStep = 0;
+
+                const content = document.getElementById('detail-content');
+                content.innerHTML = `
+                    <!-- Left: Specs & Image -->
+                    <div class="lg:col-span-2">
+                        <div class="card-ind p-2 mb-6 bg-ind-black border-8">
+                            <img src="${item.img}" alt="${item.name}" class="w-full h-auto border-2 border-ind-steel grayscale mix-blend-screen">
+                        </div>
+                        <h2 class="font-heading text-5xl font-bold mb-2 uppercase tracking-wide leading-none">${item.name}</h2>
+                        <p class="font-mono text-ind-steel mb-8 uppercase leading-relaxed text-sm">${item.desc}</p>
+                        
+                        <div class="bg-ind-white border-4 border-ind-black p-0 shadow-heavy">
+                            <h4 class="font-heading text-2xl uppercase bg-ind-black text-ind-yellow px-4 py-2 tracking-wide border-b-4 border-ind-black flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                Technical Specs
+                            </h4>
+                            <ul class="font-mono text-sm p-4 space-y-3 uppercase font-bold">
+                                ${item.specs.map(s => `<li class="flex items-center gap-3"><div class="w-2 h-2 bg-ind-yellow border border-ind-black"></div>${s}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Right: Calendar & Pricing -->
+                    <div class="lg:col-span-3 flex flex-col">
+                        <div class="card-ind bg-ind-concrete p-6 flex-grow flex flex-col">
+                            <div class="flex justify-between items-start border-b-4 border-ind-black pb-4 mb-6">
+                                <div>
+                                    <h3 class="font-heading text-4xl uppercase tracking-wide mb-1">Schedule Deployment</h3>
+                                    <div class="font-mono text-xs font-bold uppercase bg-ind-black text-ind-yellow px-2 py-1 inline-block">10% DISC ON 3+ DAYS</div>
+                                </div>
+                                <div class="text-right bg-ind-white border-4 border-ind-black p-3">
+                                    <span class="font-mono text-xs text-ind-steel uppercase block">Daily Rate</span>
+                                    <span class="font-heading text-4xl text-ind-black">$${item.rate}</span>
+                                </div>
+                            </div>
+
+                            <!-- Industrial Calendar -->
+                            <div class="bg-ind-white border-4 border-ind-black p-4 mb-8 shadow-heavy-sm">
+                                <div class="flex justify-between items-center mb-4 font-mono font-bold uppercase tracking-widest text-lg bg-ind-black text-ind-white p-2">
+                                    <button class="text-ind-steel px-2">&lt;</button>
+                                    <span>JUN 2026 // LOG</span>
+                                    <button class="text-ind-steel px-2">&gt;</button>
+                                </div>
+                                <div class="grid grid-cols-7 gap-1 text-center font-heading text-xl uppercase text-ind-steel mb-2 tracking-wide">
+                                    <div>SU</div><div>MO</div><div>TU</div><div>WE</div><div>TH</div><div>FR</div><div>SA</div>
+                                </div>
+                                <div id="calendar-grid" class="calendar-grid">
+                                    <!-- Days injected here -->
+                                </div>
+                                <div class="flex flex-wrap gap-4 mt-4 font-mono text-xs font-bold uppercase justify-center border-t-2 border-ind-steel pt-4">
+                                    <div class="flex items-center gap-2"><span class="w-4 h-4 bg-ind-white border-2 border-ind-black block"></span> OPEN</div>
+                                    <div class="flex items-center gap-2"><span class="w-4 h-4 hazard-stripes-light border-2 border-ind-black block"></span> LOCKED</div>
+                                    <div class="flex items-center gap-2"><span class="w-4 h-4 bg-ind-black border-2 border-ind-yellow block"></span> SELECTED</div>
+                                </div>
+                            </div>
+
+                            <div class="mt-auto">
+                                <p class="font-mono text-xs uppercase font-bold text-ind-danger mb-3 border-l-4 border-ind-danger pl-2">!! REQUIRES $500.00 CARD AUTHORIZATION AT CHECKOUT</p>
+                                <button id="btn-reserve" class="btn-primary w-full text-3xl py-4 flex justify-center items-center gap-4 group" disabled onclick="app.goToCheckout()">
+                                    <span>AWAITING INPUT...</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                this.renderCalendar();
+                this.navigate('detail');
+            },
+
+            renderCalendar() {
+                const grid = document.getElementById('calendar-grid');
+                grid.innerHTML = '';
+                
+                for(let i=0; i<mockStartDayOffset; i++) {
+                    const empty = document.createElement('div');
+                    grid.appendChild(empty);
+                }
+
+                const today = 3; 
+                
+                for(let day=1; day<=mockCalendarDays; day++) {
+                    const dEl = document.createElement('div');
+                    dEl.className = 'cal-day';
+                    dEl.innerText = day;
+                    
+                    if (day < today) {
+                        dEl.classList.add('past');
+                    } else if (bookedDates.includes(day)) {
+                        dEl.classList.add('booked');
+                    } else {
+                        dEl.onclick = () => this.handleDayClick(day);
+                        
+                        if (state.booking.startDay === day) dEl.classList.add('selected-start');
+                        if (state.booking.endDay === day) dEl.classList.add('selected-end');
+                        if (state.booking.startDay && state.booking.endDay && day > state.booking.startDay && day < state.booking.endDay) {
+                            dEl.classList.add('in-range');
+                        }
+                    }
+                    grid.appendChild(dEl);
+                }
+            },
+
+            handleDayClick(day) {
+                if (state.calSelectingStep === 2) {
+                    state.booking.startDay = day;
+                    state.booking.endDay = null;
+                    state.calSelectingStep = 1;
+                } else if (state.calSelectingStep === 0) {
+                    state.booking.startDay = day;
+                    state.calSelectingStep = 1;
+                } else if (state.calSelectingStep === 1) {
+                    if (day < state.booking.startDay) {
+                        state.booking.startDay = day;
+                    } else {
+                        let valid = true;
+                        for(let i=state.booking.startDay; i<=day; i++) {
+                            if(bookedDates.includes(i)) valid = false;
+                        }
+                        
+                        if(valid) {
+                            state.booking.endDay = day;
+                            state.calSelectingStep = 2;
+                        } else {
+                            const grid = document.getElementById('calendar-grid');
+                            grid.classList.add('border-ind-danger');
+                            setTimeout(()=>grid.classList.remove('border-ind-danger'), 300);
+                            return; 
+                        }
+                    }
+                }
+                
+                if(state.booking.startDay && state.booking.endDay) {
+                    state.booking.days = (state.booking.endDay - state.booking.startDay) + 1;
+                } else if (state.booking.startDay) {
+                    state.booking.days = 1;
+                }
+
+                this.renderCalendar();
+                this.updateReserveButton();
+            },
+
+            updateReserveButton() {
+                const btn = document.getElementById('btn-reserve');
+                if(state.calSelectingStep === 2) {
+                    btn.disabled = false;
+                    btn.innerHTML = `AUTHORIZE ${state.booking.days} DAY DEPLOYMENT <svg class="w-8 h-8 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>`;
+                } else {
+                    btn.disabled = true;
+                    btn.innerHTML = state.calSelectingStep === 1 ? 'INPUT END DATE' : 'AWAITING DATE INPUT...';
+                }
+            },
+
+            goToCheckout() {
+                const item = fleet.find(f => f.id === state.selectedItemId);
+                document.getElementById('checkout-item-name').innerText = item.name;
+                document.getElementById('checkout-dates').innerText = `JUN ${state.booking.startDay} - JUN ${state.booking.endDay}, 2026`;
+                document.getElementById('checkout-days-count').innerText = state.booking.days;
+                
+                document.querySelector('input[name="fulfillment"][value="pickup"]').checked = true;
+                this.toggleDelivery(false);
+
+                this.calculateTotals();
+                this.navigate('checkout');
+            },
+
+            toggleDelivery(isDel) {
+                state.booking.isDelivery = isDel;
+                const opts = document.getElementById('delivery-options');
+                const row = document.getElementById('checkout-delivery-row');
+                const select = document.getElementById('delivery-town');
+                
+                if(isDel) {
+                    opts.classList.remove('hidden');
+                    row.classList.remove('hidden');
+                    state.booking.deliveryFee = parseInt(select.value) || 0;
+                } else {
+                    opts.classList.add('hidden');
+                    row.classList.add('hidden');
+                    state.booking.deliveryFee = 0;
+                }
+                this.calculateTotals();
+            },
+
+            calculateTotals() {
+                const item = fleet.find(f => f.id === state.selectedItemId);
+                let baseSubtotal = item.rate * state.booking.days;
+                
+                let discount = 0;
+                const discRow = document.getElementById('checkout-discount-row');
+                if(state.booking.days >= 3) {
+                    discount = baseSubtotal * 0.10;
+                    discRow.classList.remove('hidden');
+                    document.getElementById('checkout-discount').innerText = `-$${discount.toFixed(2)}`;
+                } else {
+                    discRow.classList.add('hidden');
+                }
+
+                state.booking.subtotal = baseSubtotal - discount;
+                
+                if(state.booking.isDelivery) {
+                    const select = document.getElementById('delivery-town');
+                    state.booking.deliveryFee = parseInt(select.value) || 0;
+                }
+                
+                document.getElementById('checkout-subtotal').innerText = `$${baseSubtotal.toFixed(2)}`;
+                document.getElementById('checkout-delivery-fee').innerText = `$${state.booking.deliveryFee.toFixed(2)}`;
+                
+                state.booking.tax = (state.booking.subtotal + state.booking.deliveryFee) * 0.08625;
+                document.getElementById('checkout-tax').innerText = `$${state.booking.tax.toFixed(2)}`;
+                
+                state.booking.total = state.booking.subtotal + state.booking.deliveryFee + state.booking.tax;
+                document.getElementById('checkout-total').innerText = `$${state.booking.total.toFixed(2)}`;
+            },
+
+            processPayment() {
+                const btn = document.querySelector('#view-checkout button.bg-ind-yellow');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="animate-pulse relative z-10 font-mono text-xl tracking-widest">PROCESSING TRX...</span>';
+                btn.disabled = true;
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    this.goToConfirmation();
+                }, 1200);
+            },
+
+            goToConfirmation() {
+                state.tasks = { license: false, contract: false, waiver: false };
+                this.updateTasksUI();
+                this.navigate('confirmation');
+            },
+
+            completeTask(taskId) {
+                const el = document.getElementById(`task-${taskId}`);
+                const btn = el.querySelector('.task-btn');
+                btn.innerText = 'UPLOADING...';
+                btn.disabled = true;
+
+                setTimeout(() => {
+                    state.tasks[taskId] = true;
+                    this.updateTasksUI();
+                }, 800);
+            },
+
+            updateTasksUI() {
+                let allDone = true;
+                ['license', 'contract', 'waiver'].forEach(taskId => {
+                    const isDone = state.tasks[taskId];
+                    const el = document.getElementById(`task-${taskId}`);
+                    const icon = el.querySelector('.task-icon');
+                    const btn = el.querySelector('.task-btn');
+                    const statusText = el.querySelector('.task-status-text');
+
+                    if(isDone) {
+                        el.classList.replace('bg-white', 'bg-ind-concrete');
+                        el.classList.add('border-ind-steel');
+                        icon.classList.replace('border-ind-black', 'bg-ind-black');
+                        icon.classList.add('text-ind-yellow');
+                        icon.innerHTML = '✓';
+                        btn.style.display = 'none';
+                        statusText.innerText = "VERIFIED IN SYSTEM.";
+                        statusText.classList.replace('text-ind-steel', 'text-ind-black');
+                        statusText.classList.add('font-bold');
+                    } else {
+                        allDone = false;
+                    }
+                });
+
+                if(allDone) {
+                    document.getElementById('all-set-msg').classList.remove('hidden');
+                } else {
+                    document.getElementById('all-set-msg').classList.add('hidden');
+                }
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => app.init());
+
+    </script>
+</body>
+</html>

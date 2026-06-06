@@ -1,0 +1,43 @@
+# Secrets (Doppler is source of truth — never commit env files)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+.turbo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python / FastAPI
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Testing
+coverage/
+playwright-report/
+test-results/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+
+# Logs
+logs/
+*.log
