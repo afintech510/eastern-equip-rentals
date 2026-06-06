@@ -68,3 +68,47 @@ jobs:
 
       - name: Import smoke (app boots)
         run: python -c "from app.main import app; print('api import OK')"
+
+  db:
+    name: DB — apply migrations + seed + acceptance (Postgres 15)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: eastern_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: eastern_test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install psql client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Bootstrap Supabase stubs (CI only)
+        run: psql -v ON_ERROR_STOP=1 -f supabase/ci/00_bootstrap_stub.sql
+
+      - name: Apply migrations (in order)
+        run: |
+          for f in supabase/migrations/*.sql; do
+            echo "── applying $f"
+            psql -v ON_ERROR_STOP=1 -f "$f"
+          done
+
+      - name: Seed (idempotent — run twice)
+        run: |
+          psql -v ON_ERROR_STOP=1 -f supabase/seed.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/seed.sql
+
+      - name: Acceptance assertions (exclusion / transitions / config / RLS column-scope)
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/phase01_acceptance.sql

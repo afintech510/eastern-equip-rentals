@@ -5,8 +5,8 @@ import { usePathname } from 'next/navigation';
 
 const items = [
   { href: '/equipment', label: 'Inventory' },
-  { href: '/account/rentals', label: 'Active Jobs' },
   { href: '/account', label: 'Account' },
+  { href: '/login', label: 'Login' },
 ];
 
 // Mobile fixed bottom nav (paired with `pb-20 md:pb-0` on <body>, §4.5).

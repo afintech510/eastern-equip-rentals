@@ -8,7 +8,7 @@
 | Phase | Name | Status | Builder session | Review verdict | Notes |
 |-------|------|--------|-----------------|----------------|-------|
 | 00 | Environment & Theme Foundation | ✅ | claude (2026-06-06) | — | Theme §4.5 wired; web build green; Docker not run locally |
-| 01 | Schema & Auth Foundation | ⬜ | — | — | **Human gate after** (schema/RLS) |
+| 01 | Schema & Auth Foundation | 🔍 | claude (2026-06-06) | — | **Human gate after** (schema/RLS). Migrations+RLS+auth done; applied+asserted in CI (PG15); live Supabase apply pending |
 | 02a | Catalog, Inventory & Availability | ⬜ | — | — | — |
 | 02b | Reservation, Quote & Booking-Fee Payment | ⬜ | — | — | **Human gate after** (money) |
 | 03 | Accounts, Paperwork, Gate & Handover | ⬜ | — | — | **Human gate after** (gate/handover) |
@@ -24,7 +24,7 @@
 (Builder fills the completion report; reviewer fills the verdict. Keep one line per phase as it lands.)
 
 - **00** — ✅ web build+lint green / theme ported verbatim (§4.5) / fonts via next/font / `/health` 200 / no secrets / Docker compose authored (not run on a live daemon yet)
-- **01** — ⬜ schema matches §2.2 / RLS escalation blocked / exclusion constraint correct / auth works
+- **01** — 🔍 schema matches §2.2 / RLS escalation blocked (column-scoped) / exclusion constraint correct / illegal transition rejected / config check / auth flows built — all asserted in CI `db` job (PG15); live Supabase apply + end-to-end auth pending owner
 - **02a** — ⬜ catalog+calendar / concurrency test passes
 - **02b** — ⬜ quote formula + clamp + dumpster mode / booking-fee flow / delivery radius
 - **03** — ⬜ gate enforced / handover ordering / webhook idempotent

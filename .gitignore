@@ -41,3 +41,7 @@ Thumbs.db
 # Logs
 logs/
 *.log
+
+# Supabase CLI scratch
+supabase/.temp/
+.branches/

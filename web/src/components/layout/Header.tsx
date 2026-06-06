@@ -41,7 +41,7 @@ export default function Header() {
             Inventory
           </Link>
           <Link
-            href="/account/rentals"
+            href="/account"
             className="font-heading text-2xl uppercase tracking-wider text-ind-white hover:text-ind-yellow transition-colors"
           >
             Active Jobs
