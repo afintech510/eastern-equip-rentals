@@ -12,8 +12,8 @@
 | 02a | Catalog, Inventory & Availability | ✅ | claude (2026-06-07) | — | Catalog/detail/calendar + availability API + admin CRUD; web build green; live API smoke ALL PASS; concurrency proof in CI |
 | 02b | Reservation, Quote & Booking-Fee Payment | 🔍 | claude (2026-06-07) | — | **Human gate after** (money). Quote + reservation insert-retry + Stripe booking-fee PI + signature-verified webhook → reserved. **Verified live end-to-end (Stripe TEST mode)**. Delivery + TTL job deferred. Switch to live Stripe keys only at pre-launch |
 | 03 | Accounts, Paperwork, Gate & Handover | 🔍 | claude (2026-06-07) | — | **Human gate after**. DONE: account+license (live), SignWell e-sign+webhook (gated on templates), release gate, handover transaction (V3-003 deposit→balance→active, saved-card/manual/cash) + return + deposit settlement + admin POS. Handover verified live e2e (Stripe TEST). SignWell templates pending for live e-sign |
-| 04 | Comms, CRM, Ops & Unit Swap | ⬜ | — | — | — |
-| 05 | Local SEO & Launch | ⬜ | — | — | Parallel w/ 02b–04 after 02a |
+| 04 | Comms, CRM, Ops & Unit Swap | ✅ | claude (2026-06-07) | — | Email (live)+SMS(gated) notifications, dispatch, condition photos, unit swap (addendum gated), CRM. Deployed |
+| 05 | Local SEO & Launch | ✅ | claude (2026-06-07) | — | /rent/[town] SSR + LocalBusiness schema + sitemap/robots (live, 17 URLs). ELM import (M-001) deferred — needs source list + A2P + marketing table |
 | 06 | Hardening, Retention & Jobs | ⬜ | — | — | — |
 | 07 | Testing & Quality | ⬜ | — | — | — |
 | 08 | Deployment & Operations | ⬜ | — | — | **Human gate before** (deploy) |
@@ -28,8 +28,8 @@
 - **02a** — ✅ catalog+detail+calendar (keyboard/aria) / availability mirrors §2.5 / admin CRUD is_admin-gated / DB concurrency proof in CI / live API smoke ALL PASS
 - **02b** — 🔍 quote formula + clamp + dumpster flat-fee / reservation insert-retry / booking-fee PI + webhook → reserved (verified live, TEST Stripe) / delivery deferred (no Distance Matrix key)
 - **03** — 🔍 license upload+review (live) / SignWell e-sign+webhook (override-safe, gated on templates) / release gate / handover V3-003 ordered deposit→balance→active + compensation + return + deposit settlement (verified live e2e, Stripe TEST) / save-card + admin POS
-- **04** — ⬜ comms idempotent / swap addendum / photo RLS
-- **05** — ⬜ town pages indexable / import consented
+- **04** — ✅ reservation-confirmed email+SMS (consent + message_log idempotency) / dispatch (pickups/returns/deliveries) / condition photos (admin-only signed URLs) / unit swap (re-check + addendum gated) / CRM customer+message log
+- **05** — ✅ unique per-town /rent/[town] (LocalBusiness JSON-LD) + /rent index + sitemap.xml (17 URLs) + robots.txt — verified live. ELM consented import deferred (needs source + A2P)
 - **06** — ⬜ purge honors legal_hold / worker DLQ
 - **07** — ⬜ E2E + unit pass across viewports
 - **08** — ⬜ prod TLS + DR + smoke
