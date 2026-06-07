@@ -37,6 +37,24 @@ async function getJSON<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export type Town = {
+  id: string;
+  name: string;
+  slug: string;
+  distance_from_yard_miles: number | null;
+  lat: number | null;
+  lng: number | null;
+  intro_copy: string | null;
+};
+
+export function getTowns(): Promise<Town[]> {
+  return getJSON<Town[]>('/towns', { next: { revalidate: 3600 } });
+}
+
+export function getTown(slug: string): Promise<Town> {
+  return getJSON<Town>(`/towns/${slug}`, { next: { revalidate: 3600 } });
+}
+
 export function getProducts(category?: string): Promise<Product[]> {
   const q = category ? `?category=${encodeURIComponent(category)}` : '';
   // Catalog changes rarely; revalidate periodically.

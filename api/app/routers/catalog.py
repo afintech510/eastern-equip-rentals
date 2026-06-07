@@ -25,6 +25,22 @@ def _svc():
     return svc
 
 
+@router.get("/towns")
+def list_towns():
+    svc = _svc()
+    res = svc.table("towns").select("*").eq("active", True).order("name").execute()
+    return res.data or []
+
+
+@router.get("/towns/{slug}")
+def get_town(slug: str):
+    svc = _svc()
+    res = svc.table("towns").select("*").eq("slug", slug).eq("active", True).execute()
+    if not res.data:
+        raise HTTPException(status_code=404, detail={"code": "NOT_FOUND", "message": "Town not found"})
+    return res.data[0]
+
+
 @router.get("/products", response_model=list[ProductOut])
 def list_products(category: str | None = Query(default=None)):
     svc = _svc()

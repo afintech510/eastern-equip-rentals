@@ -10,7 +10,9 @@
   "lang": { "label": "Language", "en": "EN", "es": "ES", "switchTo": "Switch language" },
   "footer": {
     "tagline": "Heavy Equipment Rentals — Dispatch Ready",
-    "rights": "Eastern Rentals. Yard: ONLINE."
+    "rights": "Eastern Rentals. Yard: ONLINE.",
+    "serviceAreas": "Service Areas",
+    "inventory": "Inventory"
   },
   "home": {
     "title": "Equipment Roster",

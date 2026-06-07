@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 // Themed footer — industrial dispatch voice (§4.5 copy voice).
@@ -13,6 +14,20 @@ export default function Footer() {
             {t('tagline')}
           </p>
         </div>
+        <nav className="flex gap-6 md:self-center" aria-label="Footer">
+          <Link
+            href="/equipment"
+            className="font-heading uppercase tracking-wider hover:text-ind-yellow"
+          >
+            {t('inventory')}
+          </Link>
+          <Link
+            href="/rent"
+            className="font-heading uppercase tracking-wider hover:text-ind-yellow"
+          >
+            {t('serviceAreas')}
+          </Link>
+        </nav>
         <p className="font-mono text-xs text-ind-steel self-end">
           &copy; {new Date().getFullYear()} {t('rights')}
         </p>
