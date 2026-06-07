@@ -58,16 +58,19 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install deps + ruff
+      - name: Install deps + ruff + pytest
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt ruff
+          pip install -r requirements.txt ruff pytest
 
       - name: Ruff lint
         run: ruff check app
 
       - name: Import smoke (app boots)
         run: python -c "from app.main import app; print('api import OK')"
+
+      - name: Unit tests (availability logic)
+        run: python -m pytest -q
 
   db:
     name: DB — apply migrations + seed + acceptance (Postgres 15)
@@ -112,3 +115,6 @@ jobs:
 
       - name: Acceptance assertions (exclusion / transitions / config / RLS column-scope)
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/phase01_acceptance.sql
+
+      - name: Concurrency proof (F-004 — parallel inserts, one wins)
+        run: bash supabase/tests/concurrency_test.sh

@@ -19,6 +19,8 @@ export default async function AccountPage() {
   // customers row exists even if the auth.users trigger was bypassed.
   await supabase.rpc('ensure_customer');
 
+  const { data: isAdmin } = await supabase.rpc('is_admin');
+
   return (
     <section className="animate-powerOn flex flex-col gap-6">
       <div className="card-ind p-6">
@@ -31,11 +33,18 @@ export default async function AccountPage() {
           Profile, license upload, and active jobs deploy in Phase 03. Your account is provisioned
           and ready.
         </p>
-        <form action="/auth/signout" method="post" className="mt-6">
-          <button type="submit" className="btn-secondary">
-            Log Out
-          </button>
-        </form>
+        <div className="mt-6 flex flex-wrap gap-3">
+          {isAdmin && (
+            <a href="/admin/inventory" className="btn-primary">
+              Open Yard Office
+            </a>
+          )}
+          <form action="/auth/signout" method="post">
+            <button type="submit" className="btn-secondary">
+              Log Out
+            </button>
+          </form>
+        </div>
       </div>
     </section>
   );

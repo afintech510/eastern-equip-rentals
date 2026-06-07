@@ -73,6 +73,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Routers
+from app.routers import admin_inventory, catalog  # noqa: E402
+
+app.include_router(catalog.router)
+app.include_router(admin_inventory.router)
+
 
 @app.get("/health")
 def health() -> dict[str, object]:
