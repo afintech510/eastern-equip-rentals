@@ -44,6 +44,11 @@ class Settings(BaseSettings):
     resend_from_email: str = "Eastern Rentals <noreply@rentals.benchworksai.com>"
     admin_notify_email: str = ""
 
+    # Twilio SMS (Phase 04) — gated until keys provided
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_from_number: str = ""
+
     # Public app base URL (for signing redirect links, emails)
     app_base_url: str = Field(
         default="https://rentals.benchworksai.com",

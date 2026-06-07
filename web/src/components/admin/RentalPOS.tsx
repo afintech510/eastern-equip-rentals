@@ -3,11 +3,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { adminFetch } from '@/lib/admin-api';
+import { createClient } from '@/lib/supabase/client';
 import { getStripe } from '@/lib/stripe';
 
 type Detail = {
   id: string;
   status: string;
+  product_id: string;
+  unit_id: string | null;
   start_date: string;
   end_date: string;
   fulfillment: string;
@@ -290,7 +293,160 @@ export default function RentalPOS({ rentalId }: { rentalId: string }) {
           </p>
         </div>
       )}
+      {/* Unit swap */}
+      {['reserved', 'ready_for_pickup', 'active'].includes(d.status) && (
+        <SwapUnit
+          rentalId={rentalId}
+          productId={d.product_id}
+          currentUnit={d.unit_id}
+          onDone={load}
+        />
+      )}
+
+      {/* Condition photos */}
+      {['ready_for_pickup', 'active', 'returned', 'closed'].includes(d.status) && (
+        <ConditionPhotos rentalId={rentalId} />
+      )}
     </section>
+  );
+}
+
+function SwapUnit({
+  rentalId,
+  productId,
+  currentUnit,
+  onDone,
+}: {
+  rentalId: string;
+  productId: string;
+  currentUnit: string | null;
+  onDone: () => void;
+}) {
+  const [units, setUnits] = useState<{ id: string; label: string; status: string }[]>([]);
+  const [target, setTarget] = useState('');
+  const [msg, setMsg] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    adminFetch<{ id: string; label: string; status: string }[]>(`/products/${productId}/units`)
+      .then((u) => setUnits(u.filter((x) => x.status === 'available' && x.id !== currentUnit)))
+      .catch(() => {});
+  }, [productId, currentUnit]);
+
+  async function swap() {
+    if (!target) return;
+    setBusy(true);
+    setMsg(null);
+    try {
+      const r = await adminFetch<{ to_unit: string }>(`/rentals/${rentalId}/swap-unit`, {
+        method: 'POST',
+        body: JSON.stringify({ unit_id: target }),
+      });
+      setMsg(`Swapped to ${r.to_unit}`);
+      onDone();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : 'Swap failed');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card-ind p-5 flex flex-col gap-3">
+      <h2 className="font-heading text-2xl uppercase tracking-wide">Swap Unit</h2>
+      <div className="flex flex-wrap items-center gap-2">
+        <select className="input-ind" value={target} onChange={(e) => setTarget(e.target.value)}>
+          <option value="">Select a free unit…</option>
+          {units.map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.label}
+            </option>
+          ))}
+        </select>
+        <button type="button" className="btn-outline" disabled={busy || !target} onClick={swap}>
+          Swap
+        </button>
+      </div>
+      {msg && <p className="font-mono text-sm text-ind-steel">{msg}</p>}
+      <p className="font-mono text-[11px] text-ind-steel">
+        Re-checks the target is free; issues a single-field e-sign addendum for the new serial.
+      </p>
+    </div>
+  );
+}
+
+function ConditionPhotos({ rentalId }: { rentalId: string }) {
+  const [photos, setPhotos] = useState<{ id: string; phase: string; view_url: string | null }[]>(
+    [],
+  );
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setPhotos(await adminFetch(`/rentals/${rentalId}/photos`));
+  }, [rentalId]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function upload(e: React.ChangeEvent<HTMLInputElement>, phase: 'pickup' | 'return') {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBusy(true);
+    setMsg(null);
+    try {
+      const supabase = createClient();
+      const ext = file.name.split('.').pop() ?? 'jpg';
+      const path = `${rentalId}/${phase}-${Date.now()}.${ext}`;
+      const up = await supabase.storage
+        .from('condition-photos')
+        .upload(path, file, { upsert: true });
+      if (up.error) throw up.error;
+      await adminFetch(`/rentals/${rentalId}/photos`, {
+        method: 'POST',
+        body: JSON.stringify({ storage_path: path, phase }),
+      });
+      await load();
+    } catch (err) {
+      setMsg(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card-ind p-5 flex flex-col gap-3">
+      <h2 className="font-heading text-2xl uppercase tracking-wide">Condition Photos</h2>
+      <div className="flex flex-wrap gap-3">
+        {(['pickup', 'return'] as const).map((phase) => (
+          <label key={phase} className="btn-outline cursor-pointer">
+            {busy ? 'Uploading…' : `Add ${phase} photo`}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => upload(e, phase)}
+              disabled={busy}
+            />
+          </label>
+        ))}
+      </div>
+      {msg && <p className="font-mono text-sm text-ind-danger">{msg}</p>}
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+        {photos.map((p) =>
+          p.view_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={p.id}
+              src={p.view_url}
+              alt={p.phase}
+              className="aspect-square object-cover border-2 border-ind-black"
+            />
+          ) : null,
+        )}
+      </div>
+    </div>
   );
 }
 

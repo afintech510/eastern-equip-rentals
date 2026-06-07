@@ -53,6 +53,15 @@ class DepositActionIn(BaseModel):
     amount: float | None = None  # partial; defaults to full
 
 
+class PhotoIn(BaseModel):
+    storage_path: str
+    phase: str = Field(pattern="^(pickup|return)$")
+
+
+class SwapUnitIn(BaseModel):
+    unit_id: str
+
+
 class ProfileUpdate(BaseModel):
     full_name: str | None = None
     phone: str | None = None

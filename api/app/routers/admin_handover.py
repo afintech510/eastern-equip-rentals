@@ -21,9 +21,12 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.config import get_settings
 from app.deps import require_admin
-from app.schemas import DepositActionIn, HandoverIn
+from app.schemas import DepositActionIn, HandoverIn, PhotoIn, SwapUnitIn
+from app.services.availability import free_unit_ids
 from app.services.gate import recompute_and_advance
 from app.services.pricing import d, rhu, to_cents
+from app.services.storage import signed_url
+from app.signwell import create_document, signwell_ready
 from app.stripe_client import configure as configure_stripe
 from app.stripe_client import get_or_create_customer, saved_payment_method
 from app.supa import service_client
@@ -131,6 +134,8 @@ def admin_rental_detail(rental_id: str, _: str = Depends(require_admin)):
     return {
         "id": r["id"],
         "status": r["status"],
+        "product_id": r["product_id"],
+        "unit_id": r["unit_id"],
         "start_date": r["start_date"],
         "end_date": r["end_date"],
         "fulfillment": r["fulfillment"],
@@ -338,6 +343,150 @@ def mark_returned(rental_id: str, admin_id: str = Depends(require_admin)):
         {"actor_id": admin_id, "action": "return", "entity_type": "rental", "entity_id": rental_id}
     ).execute()
     return {"status": "returned"}
+
+
+# ---------------- Condition photos (F-020, M-004) ----------------
+@router.post("/rentals/{rental_id}/photos", status_code=201)
+def add_photo(rental_id: str, body: PhotoIn, admin_id: str = Depends(require_admin)):
+    svc = _svc()
+    _rental(svc, rental_id)  # 404 if missing
+    svc.table("condition_photos").insert(
+        {
+            "rental_id": rental_id,
+            "phase": body.phase,
+            "storage_path": body.storage_path,
+            "uploaded_by": admin_id,
+        }
+    ).execute()
+    return {"status": "ok"}
+
+
+@router.get("/rentals/{rental_id}/photos")
+def list_photos(rental_id: str, _: str = Depends(require_admin)):
+    svc = _svc()
+    rows = (
+        svc.table("condition_photos")
+        .select("id,phase,storage_path,taken_at")
+        .eq("rental_id", rental_id)
+        .order("taken_at")
+        .execute()
+        .data
+        or []
+    )
+    for p in rows:
+        p["view_url"] = signed_url("condition-photos", p["storage_path"])
+    return rows
+
+
+# ---------------- Unit swap (F-029, REV-015 Option B) ----------------
+@router.post("/rentals/{rental_id}/swap-unit")
+def swap_unit(rental_id: str, body: SwapUnitIn, admin_id: str = Depends(require_admin)):
+    """Reassign the unit on an active/ready rental. Re-checks the target unit is
+    free for the remaining range (the exclusion constraint is the real guard),
+    issues a single-field SignWell addendum acknowledging the substitute serial,
+    and preserves the original contract/waiver."""
+    svc = _svc()
+    configure_stripe()
+    r = _rental(svc, rental_id)
+    if r["status"] not in ("reserved", "ready_for_pickup", "active"):
+        raise HTTPException(
+            status_code=409, detail={"code": "BAD_STATE", "message": "Cannot swap at this stage"}
+        )
+
+    target = (
+        svc.table("units")
+        .select("id,product_id,label,serial_number,status")
+        .eq("id", body.unit_id)
+        .execute()
+        .data
+    )
+    if not target:
+        raise HTTPException(
+            status_code=404, detail={"code": "NOT_FOUND", "message": "Unit not found"}
+        )
+    target = target[0]
+    if target["product_id"] != r["product_id"]:
+        raise HTTPException(
+            status_code=422,
+            detail={"code": "WRONG_PRODUCT", "message": "Unit is a different product"},
+        )
+
+    # Re-check the target is free for this rental's range (exclude this rental).
+    from datetime import date as _date
+
+    start = _date.fromisoformat(r["start_date"])
+    end = _date.fromisoformat(r["end_date"])
+    free = free_unit_ids(svc, r["product_id"], start, end)
+    if body.unit_id not in free and body.unit_id != r["unit_id"]:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "code": "UNIT_UNAVAILABLE",
+                "message": "Target unit isn't free for these dates",
+            },
+        )
+
+    old_unit = (
+        svc.table("units").select("label,serial_number").eq("id", r["unit_id"]).execute().data
+        if r["unit_id"]
+        else None
+    )
+    old_serial = (old_unit[0]["serial_number"] or old_unit[0]["label"]) if old_unit else None
+
+    # Reassign (exclusion constraint enforces no overlap on commit).
+    try:
+        svc.table("rentals").update({"unit_id": body.unit_id}).eq("id", rental_id).execute()
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(
+            status_code=409,
+            detail={"code": "UNIT_UNAVAILABLE", "message": "Target unit just became unavailable"},
+        ) from exc
+
+    # Single-field e-sign addendum (Option B) — preserves original signatures.
+    addendum_doc = None
+    if signwell_ready() and settings.signwell_waiver_template_id:
+        cust = (
+            svc.table("customers")
+            .select("full_name,email")
+            .eq("id", r["customer_id"])
+            .execute()
+            .data[0]
+        )
+        try:
+            doc = create_document(
+                doc_type="waiver",  # reuse a template as the addendum carrier
+                full_name=cust["full_name"],
+                email=cust["email"],
+                rental_id=rental_id,
+                serial=target["serial_number"] or target["label"],
+                redirect_url=f"{settings.app_base_url}/account",
+            )
+            svc.table("rental_documents").insert(
+                {
+                    "rental_id": rental_id,
+                    "doc_type": "contract",
+                    "signwell_document_id": doc["document_id"],
+                    "status": "sent",
+                }
+            ).execute()
+            addendum_doc = doc["document_id"]
+        except Exception as exc:  # noqa: BLE001
+            logger.error("swap addendum create failed: %s", exc)
+
+    svc.table("audit_log").insert(
+        {
+            "actor_id": admin_id,
+            "action": "unit_swap",
+            "entity_type": "rental",
+            "entity_id": rental_id,
+            "detail_json": {
+                "from_serial": old_serial,
+                "to_serial": target["serial_number"] or target["label"],
+                "addendum": addendum_doc,
+            },
+        }
+    ).execute()
+    return {"status": "swapped", "to_unit": target["label"], "addendum_document": addendum_doc}
 
 
 @router.post("/rentals/{rental_id}/deposit")

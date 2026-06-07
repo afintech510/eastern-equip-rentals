@@ -16,6 +16,7 @@ import stripe
 from fastapi import APIRouter, HTTPException, Request
 
 from app.config import get_settings
+from app.notify import notify_reservation_confirmed
 from app.routers.documents import send_rental_documents
 from app.services.gate import recompute_and_advance
 from app.signwell import get_completed_pdf_url, get_document, verify_webhook
@@ -96,6 +97,10 @@ async def stripe_webhook(request: Request):
                 send_rental_documents(svc, rental_id)
             except Exception as exc:  # noqa: BLE001
                 logger.error("document send after booking fee failed: %s", exc)
+            try:
+                notify_reservation_confirmed(svc, rental_id)
+            except Exception as exc:  # noqa: BLE001
+                logger.error("reservation-confirmed notify failed: %s", exc)
             logger.info("Booking fee confirmed for rental %s", rental_id)
 
     elif etype == "payment_intent.payment_failed":
