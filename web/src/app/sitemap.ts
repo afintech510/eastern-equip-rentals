@@ -3,7 +3,9 @@ import { getProducts, getTowns } from '@/lib/api';
 
 const BASE = process.env.NEXT_PUBLIC_BASE_URL || 'https://rentals.benchworksai.com';
 
-export const revalidate = 3600;
+// Always reflect live products/towns (built fresh per request — cheap, cached
+// by Cloudflare). Avoids a stale build-time snapshot when the API is down.
+export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticUrls: MetadataRoute.Sitemap = [

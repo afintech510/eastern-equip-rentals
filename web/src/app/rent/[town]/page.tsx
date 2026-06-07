@@ -4,19 +4,12 @@ import { notFound } from 'next/navigation';
 import { getTown, getTowns, type Town } from '@/lib/api';
 import { localBusinessJsonLd, townContent } from '@/lib/town-content';
 
-// SSG + ISR (F-024): one indexable page per town, revalidated daily.
-export const revalidate = 86400;
+// SSR per request (F-024): the cookie-based locale (next-intl in the layout)
+// makes the app dynamic, so we render town pages dynamically — the HTML is
+// still fully crawlable with unique copy + LocalBusiness JSON-LD.
+export const dynamic = 'force-dynamic';
 
 const BASE = process.env.NEXT_PUBLIC_BASE_URL || 'https://rentals.benchworksai.com';
-
-export async function generateStaticParams() {
-  try {
-    const towns = await getTowns();
-    return towns.map((t) => ({ town: t.slug }));
-  } catch {
-    return [];
-  }
-}
 
 export async function generateMetadata({
   params,

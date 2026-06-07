@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTowns, type Town } from '@/lib/api';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 const BASE = process.env.NEXT_PUBLIC_BASE_URL || 'https://rentals.benchworksai.com';
 
 export const metadata: Metadata = {
