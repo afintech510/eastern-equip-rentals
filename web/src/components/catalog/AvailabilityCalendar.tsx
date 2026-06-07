@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { getCalendar, type CalendarMonth } from '@/lib/api';
 
 const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
@@ -28,9 +29,10 @@ export default function AvailabilityCalendar({
   maxRentalDays: number;
   onRangeChange?: (range: { start: string; end: string } | null) => void;
 }) {
+  const t = useTranslations('calendar');
   const today = useMemo(() => {
-    const t = new Date();
-    return new Date(t.getFullYear(), t.getMonth(), t.getDate());
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
   }, []);
   const [view, setView] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [data, setData] = useState<CalendarMonth | null>(null);
@@ -86,34 +88,34 @@ export default function AvailabilityCalendar({
     if (!start || (start && end)) {
       setStart(s);
       setEnd(null);
-      setNotice(`Start date ${s} selected. Choose an end date.`);
+      setNotice(t('a11yStart', { date: s }));
       onRangeChange?.(null);
       return;
     }
     // start set, choosing end
     if (parse(s) < parse(start)) {
       setStart(s);
-      setNotice(`Start date moved to ${s}. Choose an end date.`);
+      setNotice(t('a11yStartMoved', { date: s }));
       return;
     }
     const span = daysBetweenInclusive(start, s);
     if (span > maxRentalDays) {
-      setNotice(`Maximum rental is ${maxRentalDays} days. Pick a shorter range.`);
+      setNotice(t('a11yMax', { days: maxRentalDays }));
       return;
     }
     if (!rangeAllAvailable(start, s)) {
-      setNotice('That range includes an unavailable day. Pick dates with no booked days.');
+      setNotice(t('a11yUnavailable'));
       return;
     }
     setEnd(s);
-    setNotice(`Range selected: ${start} to ${s} (${span} day${span > 1 ? 's' : ''}).`);
+    setNotice(t('a11yRange', { start, end: s, days: span }));
     onRangeChange?.({ start, end: s });
   }
 
   function clearSelection() {
     setStart(null);
     setEnd(null);
-    setNotice('Selection cleared.');
+    setNotice(t('a11yCleared'));
     onRangeChange?.(null);
   }
 
@@ -158,7 +160,7 @@ export default function AvailabilityCalendar({
           className="btn-outline disabled:opacity-40"
           onClick={() => setView(new Date(view.getFullYear(), view.getMonth() - 1, 1))}
           disabled={!canGoPrev}
-          aria-label="Previous month"
+          aria-label={t('prevMonth')}
         >
           ‹
         </button>
@@ -167,7 +169,7 @@ export default function AvailabilityCalendar({
           type="button"
           className="btn-outline"
           onClick={() => setView(new Date(view.getFullYear(), view.getMonth() + 1, 1))}
-          aria-label="Next month"
+          aria-label={t('nextMonth')}
         >
           ›
         </button>
@@ -182,9 +184,9 @@ export default function AvailabilityCalendar({
       </div>
 
       {error ? (
-        <p className="font-mono text-sm text-ind-danger p-4">Could not load availability.</p>
+        <p className="font-mono text-sm text-ind-danger p-4">{t('error')}</p>
       ) : loading ? (
-        <p className="font-mono text-sm text-ind-steel p-4">Loading availability…</p>
+        <p className="font-mono text-sm text-ind-steel p-4">{t('loading')}</p>
       ) : (
         <div role="grid" aria-label={`Availability for ${monthLabel}`} className="calendar-grid">
           {cells.map((s, i) => {
@@ -209,7 +211,7 @@ export default function AvailabilityCalendar({
                   tabIndex={isFocusable ? 0 : -1}
                   disabled={!available && !(s === start || s === end || inRange(s))}
                   aria-disabled={past || !info?.available}
-                  aria-label={`${s}${past ? ', past' : info?.available ? `, ${info.units_free} available` : ', booked'}`}
+                  aria-label={`${s}, ${past ? t('dayPast') : info?.available ? t('dayAvailable', { n: info.units_free }) : t('dayBooked')}`}
                   aria-pressed={s === start || s === end || inRange(s)}
                   onClick={() => selectDay(s)}
                   onFocus={() => setFocusIdx(i)}
@@ -230,16 +232,11 @@ export default function AvailabilityCalendar({
       <div className="mt-4 flex flex-col gap-3">
         <p className="font-mono text-sm">
           {start && end ? (
-            <>
-              Selected: <strong>{start}</strong> → <strong>{end}</strong> (
-              {daysBetweenInclusive(start, end)} days)
-            </>
+            t('selected', { start, end, days: daysBetweenInclusive(start, end) })
           ) : start ? (
-            <>
-              Start: <strong>{start}</strong> — choose an end date
-            </>
+            t('startThenEnd', { date: start })
           ) : (
-            <span className="text-ind-steel">Select a start and end date.</span>
+            <span className="text-ind-steel">{t('selectPrompt')}</span>
           )}
         </p>
         <div className="flex gap-3">
@@ -247,18 +244,18 @@ export default function AvailabilityCalendar({
             type="button"
             className="btn-primary disabled:opacity-50"
             disabled
-            title="Reserving lands in Phase 02b"
+            title={t('phaseNote')}
           >
-            Authorize Deployment
+            {t('cta')}
           </button>
           {(start || end) && (
             <button type="button" className="btn-outline" onClick={clearSelection}>
-              Clear
+              {t('clear')}
             </button>
           )}
         </div>
         <p className="font-mono text-[11px] text-ind-steel uppercase tracking-widest">
-          &gt;&gt;&gt; Reservation &amp; payment go live in Phase 02b
+          {t('phaseNote')}
         </p>
       </div>
     </div>

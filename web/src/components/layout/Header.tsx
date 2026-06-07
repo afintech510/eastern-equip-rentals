@@ -1,9 +1,12 @@
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import LanguageToggle from './LanguageToggle';
 
 // Sticky black header with hazard top-edge, the keystone rotating gear (§4.5),
 // the placeholder wordmark lockup, primary nav, and the "Yard: ONLINE" pill.
 // Only the logo swaps later — the gear + type lockup are LOCKED.
 export default function Header() {
+  const t = useTranslations();
   return (
     <header className="bg-ind-black text-ind-yellow border-b-8 border-ind-yellow sticky top-0 z-50">
       {/* Hazard stripe top edge */}
@@ -28,7 +31,7 @@ export default function Header() {
               EASTERN
             </span>
             <span className="font-mono text-sm font-bold uppercase tracking-[0.2em] text-ind-white">
-              Heavy Equip Rentals
+              {t('brand.tagline')}
             </span>
           </span>
         </Link>
@@ -38,13 +41,13 @@ export default function Header() {
             href="/equipment"
             className="font-heading text-2xl uppercase tracking-wider text-ind-white hover:text-ind-yellow transition-colors"
           >
-            Inventory
+            {t('nav.inventory')}
           </Link>
           <Link
             href="/account"
             className="font-heading text-2xl uppercase tracking-wider text-ind-white hover:text-ind-yellow transition-colors"
           >
-            Active Jobs
+            {t('nav.activeJobs')}
           </Link>
           <span className="flex items-center gap-3 bg-ind-yellow text-ind-black px-4 py-1 border-2 border-ind-yellow">
             <span
@@ -52,10 +55,16 @@ export default function Header() {
               aria-hidden="true"
             />
             <span className="text-lg font-heading uppercase font-bold tracking-wide">
-              Yard: ONLINE
+              {t('nav.yardOnline')}
             </span>
           </span>
+          <LanguageToggle />
         </nav>
+
+        {/* Mobile: language toggle (nav lives in the bottom bar) */}
+        <div className="md:hidden">
+          <LanguageToggle />
+        </div>
       </div>
     </header>
   );

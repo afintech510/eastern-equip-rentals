@@ -1,14 +1,14 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import type { Product } from '@/lib/api';
 
-function rateLabel(p: Product) {
-  if (p.booking_fee_mode === 'percent_down' || p.daily_rate === 0) {
-    return 'Delivered · Quote';
-  }
-  return `$${p.daily_rate.toFixed(0)}/day`;
-}
+export default async function ProductCard({ product }: { product: Product }) {
+  const t = await getTranslations('catalog');
+  const rateLabel =
+    product.booking_fee_mode === 'percent_down' || product.daily_rate === 0
+      ? t('delivered')
+      : `$${product.daily_rate.toFixed(0)}${t('perDay')}`;
 
-export default function ProductCard({ product }: { product: Product }) {
   return (
     <Link
       href={`/equipment/${product.id}`}
@@ -21,13 +21,13 @@ export default function ProductCard({ product }: { product: Product }) {
         ) : (
           <div className="w-full h-full hazard-stripes-light flex items-center justify-center">
             <span className="font-mono text-xs uppercase tracking-widest text-ind-black/60">
-              No image
+              {t('noImage')}
             </span>
           </div>
         )}
         {product.requires_towing_ack && (
           <span className="absolute top-2 right-2 bg-ind-black text-ind-yellow font-mono text-[10px] uppercase tracking-widest px-2 py-1 border-2 border-ind-yellow">
-            Towable
+            {t('towable')}
           </span>
         )}
       </div>
@@ -38,7 +38,7 @@ export default function ProductCard({ product }: { product: Product }) {
         <h3 className="font-heading text-3xl uppercase tracking-wide leading-none">
           {product.name}
         </h3>
-        <span className="font-mono text-lg text-ind-black mt-1">{rateLabel(product)}</span>
+        <span className="font-mono text-lg text-ind-black mt-1">{rateLabel}</span>
       </div>
     </Link>
   );

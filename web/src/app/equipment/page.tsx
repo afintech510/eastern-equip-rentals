@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { getProducts, type Product } from '@/lib/api';
 import ProductCard from '@/components/catalog/ProductCard';
 
@@ -11,6 +12,7 @@ export default async function EquipmentPage({
 }: {
   searchParams: { category?: string };
 }) {
+  const t = await getTranslations('catalog');
   const active = (searchParams.category ?? '').toLowerCase();
 
   let products: Product[] = [];
@@ -46,10 +48,10 @@ export default async function EquipmentPage({
         />
         <div className="pl-4">
           <h1 className="font-heading text-5xl font-bold text-ind-black tracking-wide uppercase m-0 leading-none">
-            Equipment Roster
+            {t('title')}
           </h1>
           <p className="font-mono text-ind-steel mt-2 text-sm uppercase font-bold tracking-widest">
-            &gt;&gt;&gt; Select unit for spec sheets &amp; availability
+            {t('subtitle')}
           </p>
         </div>
 
@@ -59,7 +61,7 @@ export default async function EquipmentPage({
               href="/equipment"
               className={`btn-outline ${!active ? 'bg-ind-black text-ind-yellow border-ind-black' : ''}`}
             >
-              All Units
+              {t('all')}
             </Link>
             {categories.map((c) => (
               <Link
@@ -77,18 +79,14 @@ export default async function EquipmentPage({
       {error ? (
         <div className="card-ind p-8 text-center">
           <p className="font-heading text-3xl uppercase tracking-wide text-ind-danger">
-            Yard Offline
+            {t('offlineTitle')}
           </p>
-          <p className="font-mono text-sm text-ind-steel mt-2">
-            Could not reach the fleet service. Try again shortly.
-          </p>
+          <p className="font-mono text-sm text-ind-steel mt-2">{t('offlineBody')}</p>
         </div>
       ) : shown.length === 0 ? (
         <div className="card-ind p-10 text-center">
-          <p className="font-heading text-3xl uppercase tracking-wide">No Units In This Class</p>
-          <p className="font-mono text-sm text-ind-steel mt-2">
-            &gt;&gt;&gt; Check back — iron is being staged.
-          </p>
+          <p className="font-heading text-3xl uppercase tracking-wide">{t('emptyTitle')}</p>
+          <p className="font-mono text-sm text-ind-steel mt-2">{t('emptyBody')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

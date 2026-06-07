@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 
 export const metadata = { title: 'Account — Eastern Rentals' };
@@ -20,28 +21,26 @@ export default async function AccountPage() {
   await supabase.rpc('ensure_customer');
 
   const { data: isAdmin } = await supabase.rpc('is_admin');
+  const t = await getTranslations('account');
 
   return (
     <section className="animate-powerOn flex flex-col gap-6">
       <div className="card-ind p-6">
         <div className="h-2 w-full hazard-stripes -mt-6 -mx-6 mb-6" aria-hidden="true" />
-        <h1 className="font-heading text-4xl uppercase tracking-wide">Operator Console</h1>
+        <h1 className="font-heading text-4xl uppercase tracking-wide">{t('title')}</h1>
         <p className="font-mono text-sm text-ind-steel mt-2 uppercase tracking-widest">
-          &gt;&gt;&gt; Authenticated as {user.email}
+          {t('authedAs', { email: user.email ?? '' })}
         </p>
-        <p className="font-body mt-4 text-ind-black/80">
-          Profile, license upload, and active jobs deploy in Phase 03. Your account is provisioned
-          and ready.
-        </p>
+        <p className="font-body mt-4 text-ind-black/80">{t('body')}</p>
         <div className="mt-6 flex flex-wrap gap-3">
           {isAdmin && (
             <a href="/admin/inventory" className="btn-primary">
-              Open Yard Office
+              {t('openAdmin')}
             </a>
           )}
           <form action="/auth/signout" method="post">
             <button type="submit" className="btn-secondary">
-              Log Out
+              {t('logout')}
             </button>
           </form>
         </div>

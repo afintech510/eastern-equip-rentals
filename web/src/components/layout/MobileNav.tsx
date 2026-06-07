@@ -2,16 +2,18 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 const items = [
-  { href: '/equipment', label: 'Inventory' },
-  { href: '/account', label: 'Account' },
-  { href: '/login', label: 'Login' },
-];
+  { href: '/equipment', key: 'inventory' },
+  { href: '/account', key: 'account' },
+  { href: '/login', key: 'login' },
+] as const;
 
 // Mobile fixed bottom nav (paired with `pb-20 md:pb-0` on <body>, §4.5).
 export default function MobileNav() {
   const pathname = usePathname();
+  const t = useTranslations('nav');
 
   return (
     <nav
@@ -31,7 +33,7 @@ export default function MobileNav() {
                   active ? 'text-ind-yellow' : 'text-ind-white hover:text-ind-yellow'
                 }`}
               >
-                {item.label}
+                {t(item.key)}
               </Link>
             </li>
           );

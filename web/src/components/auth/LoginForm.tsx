@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 
 export default function LoginForm() {
+  const t = useTranslations('auth');
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,9 +31,9 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-      <h1 className="font-heading text-4xl uppercase tracking-wide">Operator Login</h1>
+      <h1 className="font-heading text-4xl uppercase tracking-wide">{t('loginTitle')}</h1>
       <p className="font-mono text-sm text-ind-steel uppercase tracking-widest">
-        &gt;&gt;&gt; Authenticate to access active jobs
+        {t('loginSubtitle')}
       </p>
 
       {error && (
@@ -44,7 +46,7 @@ export default function LoginForm() {
       )}
 
       <label className="flex flex-col gap-1">
-        <span className="font-heading uppercase tracking-wide">Email</span>
+        <span className="font-heading uppercase tracking-wide">{t('email')}</span>
         <input
           type="email"
           required
@@ -56,7 +58,7 @@ export default function LoginForm() {
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="font-heading uppercase tracking-wide">Password</span>
+        <span className="font-heading uppercase tracking-wide">{t('password')}</span>
         <input
           type="password"
           required
@@ -68,15 +70,15 @@ export default function LoginForm() {
       </label>
 
       <button type="submit" disabled={loading} className="btn-primary mt-2">
-        {loading ? 'Authenticating…' : 'Log In'}
+        {loading ? t('authenticating') : t('logIn')}
       </button>
 
       <div className="flex justify-between font-mono text-sm mt-2">
         <Link href="/forgot-password" className="underline hover:text-ind-danger">
-          Forgot password?
+          {t('forgot')}
         </Link>
         <Link href="/register" className="underline hover:text-ind-danger">
-          Create account
+          {t('create')}
         </Link>
       </div>
     </form>

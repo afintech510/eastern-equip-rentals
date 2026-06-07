@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 
 export default function RegisterForm() {
+  const t = useTranslations('auth');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,7 +18,7 @@ export default function RegisterForm() {
     e.preventDefault();
     setError(null);
     if (password.length < 8) {
-      setError('Password must be at least 8 characters.');
+      setError(t('minPassword'));
       return;
     }
     setLoading(true);
@@ -40,13 +42,10 @@ export default function RegisterForm() {
   if (done) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="font-heading text-4xl uppercase tracking-wide">Check Your Email</h1>
-        <p className="font-mono text-sm">
-          We sent a confirmation link to <strong>{email}</strong>. Confirm it to activate your
-          operator account.
-        </p>
+        <h1 className="font-heading text-4xl uppercase tracking-wide">{t('checkEmailTitle')}</h1>
+        <p className="font-mono text-sm">{t('checkEmailBody', { email })}</p>
         <Link href="/login" className="btn-outline self-start">
-          Back to Login
+          {t('backToLogin')}
         </Link>
       </div>
     );
@@ -54,9 +53,9 @@ export default function RegisterForm() {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-      <h1 className="font-heading text-4xl uppercase tracking-wide">New Operator</h1>
+      <h1 className="font-heading text-4xl uppercase tracking-wide">{t('registerTitle')}</h1>
       <p className="font-mono text-sm text-ind-steel uppercase tracking-widest">
-        &gt;&gt;&gt; Register to reserve equipment
+        {t('registerSubtitle')}
       </p>
 
       {error && (
@@ -69,7 +68,7 @@ export default function RegisterForm() {
       )}
 
       <label className="flex flex-col gap-1">
-        <span className="font-heading uppercase tracking-wide">Full Name</span>
+        <span className="font-heading uppercase tracking-wide">{t('fullName')}</span>
         <input
           type="text"
           required
@@ -81,7 +80,7 @@ export default function RegisterForm() {
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="font-heading uppercase tracking-wide">Email</span>
+        <span className="font-heading uppercase tracking-wide">{t('email')}</span>
         <input
           type="email"
           required
@@ -93,7 +92,7 @@ export default function RegisterForm() {
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="font-heading uppercase tracking-wide">Password</span>
+        <span className="font-heading uppercase tracking-wide">{t('password')}</span>
         <input
           type="password"
           required
@@ -106,13 +105,13 @@ export default function RegisterForm() {
       </label>
 
       <button type="submit" disabled={loading} className="btn-primary mt-2">
-        {loading ? 'Creating…' : 'Create Account'}
+        {loading ? t('creating') : t('createAccount')}
       </button>
 
       <p className="font-mono text-sm mt-2">
-        Already registered?{' '}
+        {t('alreadyRegistered')}{' '}
         <Link href="/login" className="underline hover:text-ind-danger">
-          Log in
+          {t('logIn')}
         </Link>
       </p>
     </form>

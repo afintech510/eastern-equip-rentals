@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 
 export default function ForgotPasswordForm() {
+  const t = useTranslations('auth');
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
@@ -29,12 +31,10 @@ export default function ForgotPasswordForm() {
   if (sent) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="font-heading text-4xl uppercase tracking-wide">Reset Sent</h1>
-        <p className="font-mono text-sm">
-          If an account exists for <strong>{email}</strong>, a reset link is on its way.
-        </p>
+        <h1 className="font-heading text-4xl uppercase tracking-wide">{t('resetSentTitle')}</h1>
+        <p className="font-mono text-sm">{t('resetSentBody', { email })}</p>
         <Link href="/login" className="btn-outline self-start">
-          Back to Login
+          {t('backToLogin')}
         </Link>
       </div>
     );
@@ -42,9 +42,9 @@ export default function ForgotPasswordForm() {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-      <h1 className="font-heading text-4xl uppercase tracking-wide">Reset Password</h1>
+      <h1 className="font-heading text-4xl uppercase tracking-wide">{t('resetTitle')}</h1>
       <p className="font-mono text-sm text-ind-steel uppercase tracking-widest">
-        &gt;&gt;&gt; We&apos;ll send a reset link
+        {t('resetSubtitle')}
       </p>
 
       {error && (
@@ -57,7 +57,7 @@ export default function ForgotPasswordForm() {
       )}
 
       <label className="flex flex-col gap-1">
-        <span className="font-heading uppercase tracking-wide">Email</span>
+        <span className="font-heading uppercase tracking-wide">{t('email')}</span>
         <input
           type="email"
           required
@@ -69,12 +69,12 @@ export default function ForgotPasswordForm() {
       </label>
 
       <button type="submit" disabled={loading} className="btn-primary mt-2">
-        {loading ? 'Sending…' : 'Send Reset Link'}
+        {loading ? t('sending') : t('sendReset')}
       </button>
 
       <p className="font-mono text-sm mt-2">
         <Link href="/login" className="underline hover:text-ind-danger">
-          Back to login
+          {t('backToLogin')}
         </Link>
       </p>
     </form>

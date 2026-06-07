@@ -2,11 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 
 // Reached via the reset link → /auth/callback established a session, then
 // redirected here to set a new password.
 export default function ResetPasswordForm() {
+  const t = useTranslations('auth');
   const router = useRouter();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -17,11 +19,11 @@ export default function ResetPasswordForm() {
     e.preventDefault();
     setError(null);
     if (password.length < 8) {
-      setError('Password must be at least 8 characters.');
+      setError(t('minPassword'));
       return;
     }
     if (password !== confirm) {
-      setError('Passwords do not match.');
+      setError(t('passwordsNoMatch'));
       return;
     }
     setLoading(true);
@@ -38,7 +40,7 @@ export default function ResetPasswordForm() {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-      <h1 className="font-heading text-4xl uppercase tracking-wide">Set New Password</h1>
+      <h1 className="font-heading text-4xl uppercase tracking-wide">{t('setNewTitle')}</h1>
 
       {error && (
         <p
@@ -50,7 +52,7 @@ export default function ResetPasswordForm() {
       )}
 
       <label className="flex flex-col gap-1">
-        <span className="font-heading uppercase tracking-wide">New Password</span>
+        <span className="font-heading uppercase tracking-wide">{t('newPassword')}</span>
         <input
           type="password"
           required
@@ -63,7 +65,7 @@ export default function ResetPasswordForm() {
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="font-heading uppercase tracking-wide">Confirm Password</span>
+        <span className="font-heading uppercase tracking-wide">{t('confirmPassword')}</span>
         <input
           type="password"
           required
@@ -76,7 +78,7 @@ export default function ResetPasswordForm() {
       </label>
 
       <button type="submit" disabled={loading} className="btn-primary mt-2">
-        {loading ? 'Updating…' : 'Update Password'}
+        {loading ? t('updating') : t('updatePassword')}
       </button>
     </form>
   );

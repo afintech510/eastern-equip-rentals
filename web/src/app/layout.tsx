@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
 import './globals.css';
 import { fontVariables } from '@/lib/fonts';
 import Header from '@/components/layout/Header';
@@ -11,15 +13,20 @@ export const metadata: Metadata = {
     'Reserve heavy equipment online. Earthmoving, landscaping, and pneumatic iron — dispatch ready.',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="en" className={fontVariables}>
+    <html lang={locale} className={fontVariables}>
       {/* pb-20 md:pb-0 reserves room for the mobile fixed bottom nav (§4.5) */}
       <body className="min-h-screen flex flex-col font-body pb-20 md:pb-0">
-        <Header />
-        <main className="flex-grow max-w-7xl mx-auto w-full px-4 py-8">{children}</main>
-        <Footer />
-        <MobileNav />
+        <NextIntlClientProvider messages={messages}>
+          <Header />
+          <main className="flex-grow max-w-7xl mx-auto w-full px-4 py-8">{children}</main>
+          <Footer />
+          <MobileNav />
+        </NextIntlClientProvider>
       </body>
     </html>
   );
