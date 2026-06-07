@@ -76,6 +76,7 @@ app.add_middleware(
 # Routers
 from app.routers import (  # noqa: E402
     account,
+    admin_handover,
     admin_inventory,
     admin_ops,
     catalog,
@@ -93,6 +94,7 @@ app.include_router(documents.router)
 app.include_router(webhooks.router)
 app.include_router(admin_inventory.router)
 app.include_router(admin_ops.router)
+app.include_router(admin_handover.router)
 
 
 @app.get("/health")

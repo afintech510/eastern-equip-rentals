@@ -23,7 +23,7 @@ from app.services.availability import free_unit_ids
 from app.services.delivery import quote_delivery
 from app.services.pricing import compute_quote, rhu, to_cents
 from app.stripe_client import configure as configure_stripe
-from app.stripe_client import stripe_ready
+from app.stripe_client import get_or_create_customer, stripe_ready
 from app.supa import service_client
 
 router = APIRouter(prefix="/api/v1", tags=["reservations"])
@@ -40,13 +40,22 @@ def _svc():
     return svc
 
 
-def _customer_id(svc, user_id: str) -> str:
-    res = svc.table("customers").select("id").eq("auth_user_id", user_id).execute()
+def _customer_row(svc, user_id: str) -> dict:
+    res = (
+        svc.table("customers")
+        .select("id,email,full_name,stripe_customer_id")
+        .eq("auth_user_id", user_id)
+        .execute()
+    )
     if not res.data:
         raise HTTPException(
             status_code=400, detail={"code": "NO_CUSTOMER", "message": "Customer profile missing"}
         )
-    return res.data[0]["id"]
+    return res.data[0]
+
+
+def _customer_id(svc, user_id: str) -> str:
+    return _customer_row(svc, user_id)["id"]
 
 
 def _config(svc) -> dict:
@@ -72,7 +81,9 @@ def create_reservation(body: ReservationIn, user_id: str = Depends(get_current_u
         )
     configure_stripe()
     svc = _svc()
-    customer_id = _customer_id(svc, user_id)
+    cust_row = _customer_row(svc, user_id)
+    customer_id = cust_row["id"]
+    stripe_customer_id = get_or_create_customer(svc, cust_row)
 
     prod = (
         svc.table("products")
@@ -210,6 +221,11 @@ def create_reservation(body: ReservationIn, user_id: str = Depends(get_current_u
         intent = stripe.PaymentIntent.create(
             amount=amount_cents,
             currency="usd",
+            customer=stripe_customer_id,
+            # Save the card so the balance + deposit can be taken at handover
+            # (off_session) — V3-003. The renter may still use a different card
+            # in person (manual entry path).
+            setup_future_usage="off_session",
             metadata={"rental_id": rental_id, "kind": "booking_fee", "customer_id": customer_id},
             automatic_payment_methods={"enabled": True},
             idempotency_key=f"bf_{rental_id}",

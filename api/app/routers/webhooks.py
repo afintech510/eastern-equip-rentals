@@ -102,6 +102,15 @@ async def stripe_webhook(request: Request):
         # REV-033: do not hard-release; the hold TTL governs so the card can be retried.
         logger.info("Booking-fee payment failed for PI %s (no hard release)", obj.get("id"))
 
+    elif etype == "charge.refunded":
+        # REV-032: sync deposit refunds done in the Stripe dashboard.
+        pi = obj.get("payment_intent")
+        refunded = (obj.get("amount_refunded") or 0) / 100.0
+        if pi:
+            svc.table("payments").update(
+                {"deposit_state": "refunded", "deposit_refund_amount": refunded}
+            ).eq("stripe_deposit_intent_id", pi).execute()
+
     return {"received": True}
 
 

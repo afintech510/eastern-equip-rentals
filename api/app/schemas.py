@@ -42,6 +42,17 @@ class LicenseDecisionIn(BaseModel):
     reason: str | None = None
 
 
+class HandoverIn(BaseModel):
+    # Balance settlement at pickup. Deposit is always card (hold ≤5d / charge >5d)
+    # on the card on file. "manual" entry = attach a new card via setup-card first.
+    balance_method: str = Field(default="card_on_file", pattern="^(card_on_file|cash|other)$")
+
+
+class DepositActionIn(BaseModel):
+    action: str = Field(pattern="^(capture|release|refund)$")
+    amount: float | None = None  # partial; defaults to full
+
+
 class ProfileUpdate(BaseModel):
     full_name: str | None = None
     phone: str | None = None
