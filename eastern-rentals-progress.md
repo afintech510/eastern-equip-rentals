@@ -11,7 +11,7 @@
 | 01 | Schema & Auth Foundation | 🔍 | claude (2026-06-06) | — | **Human gate after** (schema/RLS). Applied+asserted in CI (PG15) AND applied+verified on live Supabase (PG17.6, 2026-06-07). Pending: owner admin signup + review sign-off |
 | 02a | Catalog, Inventory & Availability | ✅ | claude (2026-06-07) | — | Catalog/detail/calendar + availability API + admin CRUD; web build green; live API smoke ALL PASS; concurrency proof in CI |
 | 02b | Reservation, Quote & Booking-Fee Payment | 🔍 | claude (2026-06-07) | — | **Human gate after** (money). Quote + reservation insert-retry + Stripe booking-fee PI + signature-verified webhook → reserved. **Verified live end-to-end (Stripe TEST mode)**. Delivery + TTL job deferred. Switch to live Stripe keys only at pre-launch |
-| 03 | Accounts, Paperwork, Gate & Handover | ⬜ | — | — | **Human gate after** (gate/handover) |
+| 03 | Accounts, Paperwork, Gate & Handover | 🔨 | claude (2026-06-07) | — | **Human gate after**. Part 1 DONE: account+license (live-verified), SignWell e-sign + webhook (gated on templates), release gate. Part 2 next: handover transaction (V3-003) + deposit settlement |
 | 04 | Comms, CRM, Ops & Unit Swap | ⬜ | — | — | — |
 | 05 | Local SEO & Launch | ⬜ | — | — | Parallel w/ 02b–04 after 02a |
 | 06 | Hardening, Retention & Jobs | ⬜ | — | — | — |
