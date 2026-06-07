@@ -63,6 +63,40 @@ def main() -> int:
         print(f"[{status}] {text[:2000]}")
         return 0 if status < 300 else 1
 
+    if args and args[0] == "--create-user":
+        # --create-user EMAIL PASSWORD [FULL_NAME]  (Auth Admin API, service role)
+        email, password = args[1], args[2]
+        full_name = args[3] if len(args) > 3 else "Eastern Rentals Admin"
+        srk = env.get("SUPABASE_SERVICE_ROLE_KEY", "")
+        body = json.dumps(
+            {
+                "email": email,
+                "password": password,
+                "email_confirm": True,
+                "user_metadata": {"full_name": full_name},
+            }
+        ).encode("utf-8")
+        req = urllib.request.Request(
+            f"{surl}/auth/v1/admin/users",
+            data=body,
+            method="POST",
+            headers={
+                "Authorization": f"Bearer {srk}",
+                "apikey": srk,
+                "Content-Type": "application/json",
+                "User-Agent": "eastern-rentals-migrate/1.0",
+            },
+        )
+        try:
+            with urllib.request.urlopen(req) as resp:
+                d = json.loads(resp.read().decode("utf-8"))
+                # Never echo the password; only id + email.
+                print(f"[{resp.status}] created user id={d.get('id')} email={d.get('email')}")
+                return 0
+        except urllib.error.HTTPError as e:
+            print(f"[{e.code}] {e.read().decode('utf-8')[:1000]}", file=sys.stderr)
+            return 1
+
     if args and args[0] == "--api":
         # --api GET <path> | --api PATCH <path> <json-body>
         method, path = args[1], args[2]

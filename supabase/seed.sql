@@ -90,12 +90,13 @@ FROM (VALUES
 WHERE NOT EXISTS (SELECT 1 FROM public.towns t WHERE t.slug = v.slug);
 
 -- ---------- owner admin (idempotent; links once the owner auth user exists) ----------
--- The owner must exist in auth.users (sign up / invite adam@easternbuilding.supply)
--- before this links them. Re-run the seed after first signup if needed.
+-- The owner must exist in auth.users (sign up / invite) before this links them.
+-- Re-run the seed after first signup if needed. Match case-insensitively since
+-- GoTrue stores emails lowercased.
 INSERT INTO public.admin_users (auth_user_id, role)
 SELECT u.id, 'admin'
 FROM auth.users u
-WHERE u.email = 'adam@easternbuilding.supply'
+WHERE lower(u.email) = lower('easternProRentals@gmail.com')
 ON CONFLICT (auth_user_id) DO NOTHING;
 
 -- ---------- completeness assertion (fails loudly if config is incomplete) ----------
