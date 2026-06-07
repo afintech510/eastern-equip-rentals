@@ -21,7 +21,9 @@ _PRODUCT_COLS = (
 def _svc():
     svc = service_client()
     if svc is None:
-        raise HTTPException(status_code=503, detail={"code": "DB_UNCONFIGURED", "message": "DB not configured"})
+        raise HTTPException(
+            status_code=503, detail={"code": "DB_UNCONFIGURED", "message": "DB not configured"}
+        )
     return svc
 
 
@@ -45,7 +47,10 @@ def create_product(body: ProductIn, _: str = Depends(require_admin)):
     if body.active and not _deposit_percent_set(svc):
         raise HTTPException(
             status_code=409,
-            detail={"code": "CONFIG_INCOMPLETE", "message": "config.deposit_percent must be set before activating products"},
+            detail={
+                "code": "CONFIG_INCOMPLETE",
+                "message": "config.deposit_percent must be set before activating products",
+            },
         )
     res = svc.table("products").insert(body.model_dump()).execute()
     return res.data[0]
@@ -56,15 +61,22 @@ def update_product(product_id: str, body: ProductUpdate, _: str = Depends(requir
     svc = _svc()
     patch = {k: v for k, v in body.model_dump().items() if v is not None}
     if not patch:
-        raise HTTPException(status_code=400, detail={"code": "NO_FIELDS", "message": "Nothing to update"})
+        raise HTTPException(
+            status_code=400, detail={"code": "NO_FIELDS", "message": "Nothing to update"}
+        )
     if patch.get("active") is True and not _deposit_percent_set(svc):
         raise HTTPException(
             status_code=409,
-            detail={"code": "CONFIG_INCOMPLETE", "message": "config.deposit_percent must be set before activating products"},
+            detail={
+                "code": "CONFIG_INCOMPLETE",
+                "message": "config.deposit_percent must be set before activating products",
+            },
         )
     res = svc.table("products").update(patch).eq("id", product_id).execute()
     if not res.data:
-        raise HTTPException(status_code=404, detail={"code": "NOT_FOUND", "message": "Product not found"})
+        raise HTTPException(
+            status_code=404, detail={"code": "NOT_FOUND", "message": "Product not found"}
+        )
     return res.data[0]
 
 
@@ -95,10 +107,14 @@ def update_unit(unit_id: str, body: UnitUpdate, _: str = Depends(require_admin))
     svc = _svc()
     patch = {k: v for k, v in body.model_dump().items() if v is not None}
     if not patch:
-        raise HTTPException(status_code=400, detail={"code": "NO_FIELDS", "message": "Nothing to update"})
+        raise HTTPException(
+            status_code=400, detail={"code": "NO_FIELDS", "message": "Nothing to update"}
+        )
     res = svc.table("units").update(patch).eq("id", unit_id).execute()
     if not res.data:
-        raise HTTPException(status_code=404, detail={"code": "NOT_FOUND", "message": "Unit not found"})
+        raise HTTPException(
+            status_code=404, detail={"code": "NOT_FOUND", "message": "Unit not found"}
+        )
     return res.data[0]
 
 
@@ -113,7 +129,13 @@ def delete_unit(unit_id: str, _: str = Depends(require_admin)):
 @router.get("/products/{product_id}/rates")
 def list_rates(product_id: str, _: str = Depends(require_admin)):
     svc = _svc()
-    res = svc.table("product_rates").select("*").eq("product_id", product_id).order("min_days").execute()
+    res = (
+        svc.table("product_rates")
+        .select("*")
+        .eq("product_id", product_id)
+        .order("min_days")
+        .execute()
+    )
     return res.data or []
 
 

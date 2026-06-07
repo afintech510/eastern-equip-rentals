@@ -19,7 +19,9 @@ _PRODUCT_COLS = (
 def _svc():
     svc = service_client()
     if svc is None:
-        raise HTTPException(status_code=503, detail={"code": "DB_UNCONFIGURED", "message": "DB not configured"})
+        raise HTTPException(
+            status_code=503, detail={"code": "DB_UNCONFIGURED", "message": "DB not configured"}
+        )
     return svc
 
 
@@ -36,16 +38,26 @@ def list_products(category: str | None = Query(default=None)):
 @router.get("/products/{product_id}", response_model=ProductOut)
 def get_product(product_id: str):
     svc = _svc()
-    res = svc.table("products").select(_PRODUCT_COLS).eq("id", product_id).eq("active", True).execute()
+    res = (
+        svc.table("products")
+        .select(_PRODUCT_COLS)
+        .eq("id", product_id)
+        .eq("active", True)
+        .execute()
+    )
     if not res.data:
-        raise HTTPException(status_code=404, detail={"code": "NOT_FOUND", "message": "Product not found"})
+        raise HTTPException(
+            status_code=404, detail={"code": "NOT_FOUND", "message": "Product not found"}
+        )
     return res.data[0]
 
 
 def _load_max_days(svc, product_id: str) -> int:
     res = svc.table("products").select("max_rental_days").eq("id", product_id).execute()
     if not res.data:
-        raise HTTPException(status_code=404, detail={"code": "NOT_FOUND", "message": "Product not found"})
+        raise HTTPException(
+            status_code=404, detail={"code": "NOT_FOUND", "message": "Product not found"}
+        )
     return int(res.data[0]["max_rental_days"])
 
 
@@ -57,7 +69,9 @@ def availability(
 ):
     svc = _svc()
     if end < start:
-        raise HTTPException(status_code=400, detail={"code": "INVALID_DATES", "message": "end before start"})
+        raise HTTPException(
+            status_code=400, detail={"code": "INVALID_DATES", "message": "end before start"}
+        )
     max_days = _load_max_days(svc, product_id)
     span = (end - start).days + 1  # inclusive
     if span > max_days:
@@ -75,7 +89,9 @@ def calendar(product_id: str, month: str = Query(..., pattern=r"^\d{4}-\d{2}$"))
     _load_max_days(svc, product_id)  # 404 if product missing
     year, mon = (int(p) for p in month.split("-"))
     if not 1 <= mon <= 12:
-        raise HTTPException(status_code=400, detail={"code": "INVALID_MONTH", "message": "Bad month"})
+        raise HTTPException(
+            status_code=400, detail={"code": "INVALID_MONTH", "message": "Bad month"}
+        )
     data = calendar_for_month(svc, product_id, year, mon)
     return CalendarOut(
         month=data["month"],

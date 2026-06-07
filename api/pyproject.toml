@@ -10,6 +10,18 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP", "B"]
+# The formatter owns line length; E501 is noisy for unavoidable long strings
+# (HTTPException messages, PostgREST URLs). Keep line-length as the format target.
+ignore = ["E501"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI idiom: Query/Header/Depends/Path are called in argument defaults.
+extend-immutable-calls = [
+  "fastapi.Query",
+  "fastapi.Header",
+  "fastapi.Depends",
+  "fastapi.Path",
+]
 
 [tool.black]
 line-length = 100
