@@ -96,6 +96,25 @@
     "updating": "Actualizando…",
     "passwordsNoMatch": "Las contraseñas no coinciden."
   },
+  "quote": {
+    "title": "Cotización de Despliegue",
+    "selectDates": "Seleccione fechas para ver su cotización.",
+    "loading": "Calculando…",
+    "unavailable": "Esas fechas no están disponibles — elija otro rango.",
+    "maxDuration": "La renta está limitada a {days} días.",
+    "days": "{days, plural, one {# día} other {# días}}",
+    "subtotal": "Subtotal de renta",
+    "tax": "Impuesto (8.75%)",
+    "total": "Total",
+    "bookingFee": "Tarifa de reserva (a pagar ahora)",
+    "bookingFeeNote": "No reembolsable; se acredita a su total.",
+    "balanceDue": "Saldo en la entrega",
+    "deposit": "Depósito de garantía",
+    "depositNote": "{strategy, select, hold {Retenido en una tarjeta en la entrega} other {Cobrado en la entrega}} — 30% del subtotal.",
+    "towingNote": "Unidad remolcable — confirmará el remolque al reservar.",
+    "reserveCta": "Autorizar Despliegue",
+    "reserveNote": ">>> La reserva y el pago en línea se activan pronto."
+  },
   "account": {
     "title": "Consola de Operador",
     "authedAs": ">>> Autenticado como {email}",

@@ -22,6 +22,32 @@ class AvailabilityOut(BaseModel):
     units_free: int
 
 
+# ---- Quote (§3.2) ----
+class QuoteIn(BaseModel):
+    product_id: str
+    start_date: date
+    end_date: date
+    fulfillment: str = Field(default="pickup", pattern="^(pickup|delivery)$")
+    delivery_address: str | None = None
+
+
+class QuoteOut(BaseModel):
+    rental_subtotal: float
+    discount_amount: float
+    delivery_fee: float
+    delivery_in_radius: bool
+    tax_amount: float
+    total: float
+    booking_fee_amount: float
+    balance_due: float
+    card_service_fee_pct: float
+    deposit_amount: float
+    deposit_strategy: str
+    requires_towing_ack: bool
+    available: bool
+    rental_days: int
+
+
 class CalendarDay(BaseModel):
     date: date
     available: bool

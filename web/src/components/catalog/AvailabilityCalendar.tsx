@@ -239,24 +239,11 @@ export default function AvailabilityCalendar({
             <span className="text-ind-steel">{t('selectPrompt')}</span>
           )}
         </p>
-        <div className="flex gap-3">
-          <button
-            type="button"
-            className="btn-primary disabled:opacity-50"
-            disabled
-            title={t('phaseNote')}
-          >
-            {t('cta')}
+        {(start || end) && (
+          <button type="button" className="btn-outline self-start" onClick={clearSelection}>
+            {t('clear')}
           </button>
-          {(start || end) && (
-            <button type="button" className="btn-outline" onClick={clearSelection}>
-              {t('clear')}
-            </button>
-          )}
-        </div>
-        <p className="font-mono text-[11px] text-ind-steel uppercase tracking-widest">
-          {t('phaseNote')}
-        </p>
+        )}
       </div>
     </div>
   );

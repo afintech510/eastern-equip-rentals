@@ -28,6 +28,10 @@ class Settings(BaseSettings):
     # Redis (locks / jobs)
     redis_url: str = "redis://redis:6379/0"
 
+    # Integrations (wired in later phases — empty until keys provided)
+    google_distance_matrix_api_key: str = ""
+    stripe_secret_key: str = ""
+
 
 @lru_cache
 def get_settings() -> Settings:

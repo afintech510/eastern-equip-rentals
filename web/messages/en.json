@@ -96,6 +96,25 @@
     "updating": "Updating…",
     "passwordsNoMatch": "Passwords do not match."
   },
+  "quote": {
+    "title": "Deployment Quote",
+    "selectDates": "Select dates to see your quote.",
+    "loading": "Calculating…",
+    "unavailable": "Those dates aren't available — pick another range.",
+    "maxDuration": "Rentals are limited to {days} days.",
+    "days": "{days, plural, one {# day} other {# days}}",
+    "subtotal": "Rental subtotal",
+    "tax": "Tax (8.75%)",
+    "total": "Total",
+    "bookingFee": "Booking fee (due now)",
+    "bookingFeeNote": "Non-refundable; credits toward your total.",
+    "balanceDue": "Balance at pickup",
+    "deposit": "Security deposit",
+    "depositNote": "{strategy, select, hold {Held on a card at handover} other {Charged at handover}} — 30% of subtotal.",
+    "towingNote": "Towable unit — you'll confirm towing at reservation.",
+    "reserveCta": "Authorize Deployment",
+    "reserveNote": ">>> Online reservation & payment go live shortly."
+  },
   "account": {
     "title": "Operator Console",
     "authedAs": ">>> Authenticated as {email}",

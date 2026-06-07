@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getProduct, type Product } from '@/lib/api';
-import AvailabilityCalendar from '@/components/catalog/AvailabilityCalendar';
+import ReservePanel from '@/components/catalog/ReservePanel';
 
 export const dynamic = 'force-dynamic';
 
@@ -76,7 +76,7 @@ export default async function ProductDetailPage({ params }: { params: { productI
           <h2 className="font-heading text-3xl uppercase tracking-wide border-b-4 border-ind-black pb-2">
             {t('availability')}
           </h2>
-          <AvailabilityCalendar productId={product.id} maxRentalDays={product.max_rental_days} />
+          <ReservePanel productId={product.id} maxRentalDays={product.max_rental_days} />
         </div>
       </div>
     </section>

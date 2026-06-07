@@ -50,8 +50,11 @@ FROM (VALUES
   ('Wood Chipper',      'landscaping', 'Tow-behind chipper for brush and limbs up to 6".',                    275.00, 'standard',     true,  30),
   ('Concrete Mixer',    'concrete',    'Towable concrete/mortar mixer.',                                       95.00,  'standard',     true,  30),
   ('Equipment Trailer', 'hauling',     'Heavy-duty equipment transport trailer.',                              120.00, 'standard',     true,  30),
-  ('10-Yard Dumpster',  'dumpster',    'Roll-off dumpster, delivered and picked up.',                          0.00,   'percent_down', false, 30),
-  ('20-Yard Dumpster',  'dumpster',    'Roll-off dumpster, delivered and picked up.',                          0.00,   'percent_down', false, 30)
+  -- SPEC-AMBIGUITY: dumpster pricing model (flat vs per-day) is owner-TBD.
+  -- daily_rate here is a placeholder so quotes aren't $0; percent_down booking
+  -- fee = 30% of subtotal (subtotal = daily_rate × days). Owner sets real prices.
+  ('10-Yard Dumpster',  'dumpster',    'Roll-off dumpster, delivered and picked up.',                          450.00, 'percent_down', false, 30),
+  ('20-Yard Dumpster',  'dumpster',    'Roll-off dumpster, delivered and picked up.',                          600.00, 'percent_down', false, 30)
 ) AS v(name, category, description, daily_rate, booking_fee_mode, requires_towing_ack, max_rental_days)
 WHERE NOT EXISTS (SELECT 1 FROM public.products p WHERE p.name = v.name);
 

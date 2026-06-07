@@ -74,9 +74,10 @@ app.add_middleware(
 )
 
 # Routers
-from app.routers import admin_inventory, catalog  # noqa: E402
+from app.routers import admin_inventory, catalog, quote  # noqa: E402
 
 app.include_router(catalog.router)
+app.include_router(quote.router)
 app.include_router(admin_inventory.router)
 
 

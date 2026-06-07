@@ -54,6 +54,47 @@ export function getCalendar(productId: string, month: string): Promise<CalendarM
   });
 }
 
+export type Quote = {
+  rental_subtotal: number;
+  discount_amount: number;
+  delivery_fee: number;
+  delivery_in_radius: boolean;
+  tax_amount: number;
+  total: number;
+  booking_fee_amount: number;
+  balance_due: number;
+  card_service_fee_pct: number;
+  deposit_amount: number;
+  deposit_strategy: 'hold' | 'charge';
+  requires_towing_ack: boolean;
+  available: boolean;
+  rental_days: number;
+};
+
+export type QuoteError = { code: string; message: string };
+
+// Returns the quote, or a typed error (e.g. MAX_DURATION, DELIVERY_UNAVAILABLE).
+export async function postQuote(body: {
+  product_id: string;
+  start_date: string;
+  end_date: string;
+  fulfillment?: 'pickup' | 'delivery';
+  delivery_address?: string;
+}): Promise<{ quote: Quote } | { error: QuoteError }> {
+  const res = await fetch(`${apiBase()}/api/v1/quote`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store',
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    const detail = data?.detail ?? {};
+    return { error: { code: detail.code ?? 'ERROR', message: detail.message ?? 'Quote failed' } };
+  }
+  return { quote: data as Quote };
+}
+
 export function getAvailability(
   productId: string,
   start: string,
