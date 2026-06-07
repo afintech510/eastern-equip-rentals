@@ -39,8 +39,16 @@
 
 Until templates exist, document creation is a logged no-op (flow never blocks). Until Resend is set, emails are logged no-ops. `test_mode: true` is set on SignWell doc creation — flip to false at pre-launch.
 
-## Part 2 (next round)
-- `POST /admin/rentals/{id}/handover` — gate-enforced, **ordered deposit → balance → active** (V3-003) with compensation; deposit hold ≤5d / charge >5d; balance card(+3.5%)/cash/other.
-- `POST /admin/rentals/{id}/return` + `POST /admin/rentals/{id}/deposit` (capture/release/refund, F-027).
-- Admin rental detail UI (POS): collect balance + deposit, condition photos (F-020 is Phase 04).
-- Needs a card-present/terminal decision for in-person deposit/balance capture.
+## Part 2 — COMPLETE (2026-06-07) — handover (V3-003)
+
+Owner chose **save card at booking + manual entry**, unified via the saved card.
+
+- **migration 0007**: `customers.stripe_customer_id`.
+- **Reservation** now saves the card (`setup_future_usage=off_session` + Stripe Customer).
+- `POST /admin/rentals/{id}/handover` — gate-enforced; **ordered deposit → balance → active** (V3-003): deposit hold (≤5d, manual-capture auth) / charge (>5d) FIRST; balance card-on-file(+3.5%)/cash/other; **active flip is the last committed write**; **compensation** releases the deposit if a card balance fails.
+- `POST /admin/rentals/{id}/setup-card` (SetupIntent → tablet PaymentElement = "manual entry" / different card), `…/return`, `…/deposit` (capture/release/refund, F-027). Webhook `charge.refunded` sync (REV-032).
+- **Admin POS UI**: `/admin/rentals` dispatch list + `/admin/rentals/[id]` (gate checklist, card-on-file + add/replace card, balance method, Complete Handover, Mark Returned, deposit capture/release/refund).
+
+**Verified live e2e (Stripe TEST):** reserve (card saved) → pay → gate → handover → `active` (deposit $315 **held**, balance charged off-session) → return → deposit **released**.
+
+> Note: in the live test the contract/waiver gate flags were simulated (SignWell templates not yet configured). In production those are set by real SignWell signing once templates + webhook are added (see part-1 table). Human review gate now applies to the full phase.

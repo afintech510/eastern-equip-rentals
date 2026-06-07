@@ -11,7 +11,7 @@
 | 01 | Schema & Auth Foundation | 🔍 | claude (2026-06-06) | — | **Human gate after** (schema/RLS). Applied+asserted in CI (PG15) AND applied+verified on live Supabase (PG17.6, 2026-06-07). Pending: owner admin signup + review sign-off |
 | 02a | Catalog, Inventory & Availability | ✅ | claude (2026-06-07) | — | Catalog/detail/calendar + availability API + admin CRUD; web build green; live API smoke ALL PASS; concurrency proof in CI |
 | 02b | Reservation, Quote & Booking-Fee Payment | 🔍 | claude (2026-06-07) | — | **Human gate after** (money). Quote + reservation insert-retry + Stripe booking-fee PI + signature-verified webhook → reserved. **Verified live end-to-end (Stripe TEST mode)**. Delivery + TTL job deferred. Switch to live Stripe keys only at pre-launch |
-| 03 | Accounts, Paperwork, Gate & Handover | 🔨 | claude (2026-06-07) | — | **Human gate after**. Part 1 DONE: account+license (live-verified), SignWell e-sign + webhook (gated on templates), release gate. Part 2 next: handover transaction (V3-003) + deposit settlement |
+| 03 | Accounts, Paperwork, Gate & Handover | 🔍 | claude (2026-06-07) | — | **Human gate after**. DONE: account+license (live), SignWell e-sign+webhook (gated on templates), release gate, handover transaction (V3-003 deposit→balance→active, saved-card/manual/cash) + return + deposit settlement + admin POS. Handover verified live e2e (Stripe TEST). SignWell templates pending for live e-sign |
 | 04 | Comms, CRM, Ops & Unit Swap | ⬜ | — | — | — |
 | 05 | Local SEO & Launch | ⬜ | — | — | Parallel w/ 02b–04 after 02a |
 | 06 | Hardening, Retention & Jobs | ⬜ | — | — | — |
@@ -27,7 +27,7 @@
 - **01** — 🔍 schema matches §2.2 / RLS escalation blocked (column-scoped) / exclusion constraint correct / illegal transition rejected / config check / auth flows built — all asserted in CI `db` job (PG15); live Supabase apply + end-to-end auth pending owner
 - **02a** — ✅ catalog+detail+calendar (keyboard/aria) / availability mirrors §2.5 / admin CRUD is_admin-gated / DB concurrency proof in CI / live API smoke ALL PASS
 - **02b** — 🔍 quote formula + clamp + dumpster flat-fee / reservation insert-retry / booking-fee PI + webhook → reserved (verified live, TEST Stripe) / delivery deferred (no Distance Matrix key)
-- **03** — ⬜ gate enforced / handover ordering / webhook idempotent
+- **03** — 🔍 license upload+review (live) / SignWell e-sign+webhook (override-safe, gated on templates) / release gate / handover V3-003 ordered deposit→balance→active + compensation + return + deposit settlement (verified live e2e, Stripe TEST) / save-card + admin POS
 - **04** — ⬜ comms idempotent / swap addendum / photo RLS
 - **05** — ⬜ town pages indexable / import consented
 - **06** — ⬜ purge honors legal_hold / worker DLQ
