@@ -8,7 +8,7 @@
 | Phase | Name | Status | Builder session | Review verdict | Notes |
 |-------|------|--------|-----------------|----------------|-------|
 | 00 | Environment & Theme Foundation | ✅ | claude (2026-06-06) | — | Theme §4.5 wired; web build green; Docker not run locally |
-| 01 | Schema & Auth Foundation | 🔍 | claude (2026-06-06) | — | **Human gate after** (schema/RLS). Migrations+RLS+auth done; applied+asserted in CI (PG15); live Supabase apply pending |
+| 01 | Schema & Auth Foundation | 🔍 | claude (2026-06-06) | — | **Human gate after** (schema/RLS). Applied+asserted in CI (PG15) AND applied+verified on live Supabase (PG17.6, 2026-06-07). Pending: owner admin signup + review sign-off |
 | 02a | Catalog, Inventory & Availability | ⬜ | — | — | — |
 | 02b | Reservation, Quote & Booking-Fee Payment | ⬜ | — | — | **Human gate after** (money) |
 | 03 | Accounts, Paperwork, Gate & Handover | ⬜ | — | — | **Human gate after** (gate/handover) |
@@ -44,6 +44,7 @@
 | 2026-06-06 | Spec LOCKED v2.1 against SOW v1.3 (signed) | Cycle-3 fixes applied |
 | 2026-06-06 | Synced to GitHub (afintech510/eastern-equip-rentals); CI/CD via GitHub Actions | Repo created; deploy mirrors maningo/benchworks (Docker Compose + shared nginx + Doppler) |
 | 2026-06-06 | VPS port = 3009 | 3003/3005/3007 taken (maningo/benchworks/os-adam); spec §1.3 "3007" superseded — confirm at Phase 08 |
+| 2026-06-07 | Phase 01 applied to live Supabase (ref wibwvqbzgvgvzrmeyrxj, PG17.6) | Migrations+seed via Management API + PAT; all live checks pass; auth redirect URLs set for localhost:3009 |
 
 ## Blocked Items
 

@@ -54,8 +54,23 @@
 - `// SPEC-AMBIGUITY:` `towns`/`town_pages` columns underspecified in §2.2 — chose a reasonable F-024 set (slug unique, distance, lat/lng, copy, active).
 - `// SPEC-AMBIGUITY:` config completeness "nulled value" — columns are NOT NULL so nulling isn't reachable; the check instead fails on missing row / zero-where-invalid (test E zeroes `deposit_percent`).
 
+## Live apply (2026-06-07) — DONE & verified
+Applied to the live Supabase project `wibwvqbzgvgvzrmeyrxj` (PostgreSQL 17.6) via the Management
+API (`scripts/apply_remote_sql.py`, reads PAT from `.env`):
+- Migrations 0001–0006 applied; `seed.sql` run twice (idempotent).
+- Verified live: 17/17 spec tables; RLS enabled on all 17; 12/12 functions; `no_unit_overlap`
+  exclusion constraint present; `config_is_complete()` = true; 7 products (2 dumpster
+  `percent_down`), 11 units, 8 towns, 3 private Storage buckets; `count_missing_customers()` = 0.
+- **REV-029 proven live:** `authenticated` has `SELECT,UPDATE` on `customers.phone` but only
+  `SELECT` on `license_status` — self-approval impossible.
+- Auth config set: `site_url=http://localhost:3009`, `uri_allow_list` includes `/auth/callback`,
+  signup enabled, email confirmation on (default).
+
 ## Blocked Items
-- **Live apply pending owner action:** create/connect the Supabase project, set its creds in Doppler, then `psql "$SUPABASE_DB_URL" -f` each migration + `seed.sql` (or `supabase db reset`). The owner (`adam@easternbuilding.supply`) must sign up once so the seed links them into `admin_users`.
+- **Owner admin link:** `admin_users` has 0 rows until `adam@easternbuilding.supply` exists in
+  `auth.users`. Create the owner (sign up via `/register` once the app runs, or Auth Admin API),
+  then re-run `supabase/seed.sql` to link them as admin.
+- **Doppler:** creds currently in local `.env`; mirror to Doppler for CI/prod before Phase 08.
 
 ## Warnings for Next Phase (02a — Catalog, Inventory & Availability)
 - Availability is the GiST exclusion constraint (`rentals.occupied`); the reservation handler must use the **insert-retry** path (catch `exclusion_violation` 23P01, try next free unit, else `409 UNIT_UNAVAILABLE`) — REV-003. Units are **admin-only at RLS**; expose availability via API, never direct unit reads.
