@@ -11,11 +11,13 @@ export default async function ReservePage({
   searchParams,
 }: {
   params: { productId: string };
-  searchParams: { start?: string; end?: string };
+  searchParams: { start?: string; end?: string; fulfillment?: string; address?: string };
 }) {
   const t = await getTranslations('reserve');
   const { start, end } = searchParams;
   if (!start || !end) notFound();
+  const fulfillment = searchParams.fulfillment === 'delivery' ? 'delivery' : 'pickup';
+  const address = searchParams.address ?? '';
 
   let product: Product;
   try {
@@ -35,7 +37,13 @@ export default async function ReservePage({
       <h1 className="font-heading text-5xl uppercase tracking-wide leading-none">
         {t('title')} · {product.name}
       </h1>
-      <CheckoutClient product={product} start={start} end={end} />
+      <CheckoutClient
+        product={product}
+        start={start}
+        end={end}
+        fulfillment={fulfillment}
+        deliveryAddress={address}
+      />
     </section>
   );
 }

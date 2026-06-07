@@ -1,16 +1,12 @@
-"""Quote endpoint (§3.2, F-007/F-009/F-010). Server-authoritative pricing —
-no client-supplied amounts are trusted (REV-011).
-
-Pickup is fully priced. Delivery pricing (F-009) needs the Google Distance
-Matrix integration and is wired alongside Stripe once those keys are set —
-until then a delivery quote returns 422 DELIVERY_UNAVAILABLE.
-"""
+"""Quote + delivery endpoints (§3.2/§5.5, F-007/F-009/F-010). Server-authoritative
+pricing — no client-supplied amounts are trusted (REV-011)."""
 
 from fastapi import APIRouter, HTTPException
 
 from app.config import get_settings
-from app.schemas import QuoteIn, QuoteOut
+from app.schemas import DeliveryQuoteIn, DeliveryQuoteOut, QuoteIn, QuoteOut
 from app.services.availability import units_free_for_span
+from app.services.delivery import quote_delivery
 from app.services.pricing import compute_quote
 from app.supa import service_client
 
@@ -34,6 +30,16 @@ def _load_config(svc) -> dict:
             status_code=503, detail={"code": "CONFIG_MISSING", "message": "Config not seeded"}
         )
     return res.data[0]
+
+
+@router.post("/delivery/quote", response_model=DeliveryQuoteOut)
+def delivery_quote(body: DeliveryQuoteIn):
+    svc = _svc()
+    cfg = _load_config(svc)
+    dq = quote_delivery(body.address, cfg)
+    return DeliveryQuoteOut(
+        distance_miles=dq.distance_miles, fee=dq.fee, in_radius=dq.in_radius, pending=dq.pending
+    )
 
 
 @router.post("/quote", response_model=QuoteOut)
@@ -67,34 +73,43 @@ def quote(body: QuoteIn):
             },
         )
 
-    # Delivery pricing requires the Distance Matrix integration (deferred).
-    if body.fulfillment == "delivery" and not settings_has_distance_key():
-        raise HTTPException(
-            status_code=422,
-            detail={
-                "code": "DELIVERY_UNAVAILABLE",
-                "message": "Delivery pricing isn't available yet — choose pickup.",
-            },
-        )
+    cfg = _load_config(svc)
+
+    # Delivery pricing (F-009): out of radius → 422; API error → pending (fee 0,
+    # no deadlock, REV-034); pickup → fee 0.
+    delivery_fee = 0.0
+    delivery_in_radius = True
+    if body.fulfillment == "delivery":
+        if not body.delivery_address:
+            raise HTTPException(
+                status_code=400,
+                detail={"code": "ADDRESS_REQUIRED", "message": "Delivery address required"},
+            )
+        dq = quote_delivery(body.delivery_address, cfg)
+        if not dq.in_radius and not dq.pending:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "DELIVERY_OUT_OF_RANGE",
+                    "message": "Delivery isn't available to that address",
+                },
+            )
+        delivery_fee = dq.fee
+        delivery_in_radius = dq.in_radius
 
     free, _total_units = units_free_for_span(svc, body.product_id, body.start_date, body.end_date)
-    cfg = _load_config(svc)
 
     q = compute_quote(
         daily_rate=p["daily_rate"],
         booking_fee_mode=p["booking_fee_mode"],
         days=days,
         cfg=cfg,
-        delivery_fee=0,
+        delivery_fee=delivery_fee,
     )
     return QuoteOut(
         **q,
-        delivery_in_radius=True,
+        delivery_in_radius=delivery_in_radius,
         requires_towing_ack=bool(p["requires_towing_ack"]),
         available=free > 0,
         rental_days=days,
     )
-
-
-def settings_has_distance_key() -> bool:
-    return bool(getattr(settings, "google_distance_matrix_api_key", "") or "")

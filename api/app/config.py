@@ -50,6 +50,9 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("APP_BASE_URL", "NEXT_PUBLIC_BASE_URL"),
     )
 
+    # Delivery origin (the yard) for Distance Matrix (§5.5)
+    yard_origin: str = "Center Moriches, NY 11934"
+
 
 @lru_cache
 def get_settings() -> Settings:

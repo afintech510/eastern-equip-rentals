@@ -126,6 +126,7 @@ export async function createReservation(
     start_date: string;
     end_date: string;
     fulfillment?: 'pickup' | 'delivery';
+    delivery_address?: string;
     towing_ack?: boolean;
   },
 ): Promise<{ reservation: Reservation } | { error: QuoteError }> {

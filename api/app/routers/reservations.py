@@ -20,6 +20,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.deps import get_current_user_id
 from app.schemas import GateOut, ReservationIn, ReservationOut
 from app.services.availability import free_unit_ids
+from app.services.delivery import quote_delivery
 from app.services.pricing import compute_quote, rhu, to_cents
 from app.stripe_client import configure as configure_stripe
 from app.stripe_client import stripe_ready
@@ -97,14 +98,27 @@ def create_reservation(body: ReservationIn, user_id: str = Depends(get_current_u
             detail={"code": "MAX_DURATION", "message": f"Max {p['max_rental_days']} days"},
         )
 
+    cfg = _config(svc)
+
+    # Delivery pricing (F-009). Out of radius → 422; API error → pending (REV-034).
+    delivery_fee = 0.0
+    delivery_dq = None
     if body.fulfillment == "delivery":
-        raise HTTPException(
-            status_code=422,
-            detail={
-                "code": "DELIVERY_UNAVAILABLE",
-                "message": "Delivery isn't available yet — choose pickup.",
-            },
-        )
+        if not body.delivery_address:
+            raise HTTPException(
+                status_code=400,
+                detail={"code": "ADDRESS_REQUIRED", "message": "Delivery address required"},
+            )
+        delivery_dq = quote_delivery(body.delivery_address, cfg)
+        if not delivery_dq.in_radius and not delivery_dq.pending:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "DELIVERY_OUT_OF_RANGE",
+                    "message": "Delivery isn't available to that address",
+                },
+            )
+        delivery_fee = delivery_dq.fee
 
     # F-028: towable products on pickup require the towing acknowledgment.
     if p["requires_towing_ack"] and body.fulfillment == "pickup" and not body.towing_ack:
@@ -113,9 +127,12 @@ def create_reservation(body: ReservationIn, user_id: str = Depends(get_current_u
             detail={"code": "TOWING_ACK_REQUIRED", "message": "Please confirm towing requirements"},
         )
 
-    cfg = _config(svc)
     q = compute_quote(
-        daily_rate=p["daily_rate"], booking_fee_mode=p["booking_fee_mode"], days=days, cfg=cfg
+        daily_rate=p["daily_rate"],
+        booking_fee_mode=p["booking_fee_mode"],
+        days=days,
+        cfg=cfg,
+        delivery_fee=delivery_fee,
     )
     card_service_fee = float(
         rhu(Decimal(str(q["booking_fee_amount"])) * Decimal(str(cfg["card_service_fee_pct"])))
@@ -150,6 +167,7 @@ def create_reservation(body: ReservationIn, user_id: str = Depends(get_current_u
         "balance_amount": q["balance_due"],
         "service_fee_total": card_service_fee,
         "towing_ack": body.towing_ack,
+        "delivery_address": body.delivery_address if body.fulfillment == "delivery" else None,
         "payment_attempted_at": datetime.now(UTC).isoformat(),
     }
     for unit_id in candidates:
@@ -171,6 +189,20 @@ def create_reservation(body: ReservationIn, user_id: str = Depends(get_current_u
         )
 
     rental_id = rental["id"]
+
+    # Record the delivery quote (F-009) attached to the rental.
+    if delivery_dq is not None:
+        svc.table("delivery_quotes").insert(
+            {
+                "rental_id": rental_id,
+                "address": body.delivery_address,
+                "distance_miles": delivery_dq.distance_miles
+                if delivery_dq.distance_miles is not None
+                else 0,
+                "quoted_fee": delivery_fee,
+                "in_radius": delivery_dq.in_radius,
+            }
+        ).execute()
 
     # Booking fee + 3.5% card surcharge, in integer cents (REV-030).
     amount_cents = to_cents(Decimal(str(q["booking_fee_amount"])) + Decimal(str(card_service_fee)))

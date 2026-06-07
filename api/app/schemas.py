@@ -82,6 +82,17 @@ class GateOut(BaseModel):
     product_name: str | None = None
 
 
+class DeliveryQuoteIn(BaseModel):
+    address: str
+
+
+class DeliveryQuoteOut(BaseModel):
+    distance_miles: float | None
+    fee: float
+    in_radius: bool
+    pending: bool
+
+
 class QuoteOut(BaseModel):
     rental_subtotal: float
     discount_amount: float

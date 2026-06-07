@@ -12,10 +12,14 @@ export default function CheckoutClient({
   product,
   start,
   end,
+  fulfillment = 'pickup',
+  deliveryAddress = '',
 }: {
   product: Product;
   start: string;
   end: string;
+  fulfillment?: 'pickup' | 'delivery';
+  deliveryAddress?: string;
 }) {
   const t = useTranslations('reserve');
   const locale = useLocale();
@@ -45,9 +49,10 @@ export default function CheckoutClient({
       product_id: product.id,
       start_date: start,
       end_date: end,
-      fulfillment: 'pickup',
+      fulfillment,
+      ...(fulfillment === 'delivery' ? { delivery_address: deliveryAddress } : {}),
     }).then((r) => ('quote' in r ? setQuote(r.quote) : setError(r.error.message)));
-  }, [product.id, start, end]);
+  }, [product.id, start, end, fulfillment, deliveryAddress]);
 
   async function proceed() {
     setError(null);
@@ -61,7 +66,8 @@ export default function CheckoutClient({
       product_id: product.id,
       start_date: start,
       end_date: end,
-      fulfillment: 'pickup',
+      fulfillment,
+      ...(fulfillment === 'delivery' ? { delivery_address: deliveryAddress } : {}),
       towing_ack: towingAck,
     });
     setCreating(false);
@@ -80,7 +86,7 @@ export default function CheckoutClient({
         <div className="h-2 w-full hazard-stripes -mt-6 -mx-6 mb-2" aria-hidden="true" />
         <p className="font-mono">{t('loginRequired')}</p>
         <Link
-          href={`/login?next=${encodeURIComponent(`/reserve/${product.id}?start=${start}&end=${end}`)}`}
+          href={`/login?next=${encodeURIComponent(`/reserve/${product.id}?start=${start}&end=${end}&fulfillment=${fulfillment}${fulfillment === 'delivery' ? `&address=${encodeURIComponent(deliveryAddress)}` : ''}`)}`}
           className="btn-primary"
         >
           {t('logIn')}
@@ -98,6 +104,11 @@ export default function CheckoutClient({
         <h2 className="font-heading text-3xl uppercase tracking-wide">{t('summary')}</h2>
         <p className="font-mono text-sm text-ind-steel mt-1">{product.name}</p>
         <p className="font-mono text-sm">{t('dates', { start, end })}</p>
+        <p className="font-mono text-sm text-ind-steel">
+          {fulfillment === 'delivery'
+            ? t('deliveryTo', { address: deliveryAddress })
+            : t('pickupYard')}
+        </p>
 
         {error && (
           <p
@@ -110,6 +121,9 @@ export default function CheckoutClient({
 
         {quote && (
           <div className="font-mono text-sm flex flex-col gap-2 mt-4 border-t-2 border-ind-black/10 pt-3">
+            {quote.delivery_fee > 0 && (
+              <Row label={t('deliveryFee')} value={money.format(quote.delivery_fee)} />
+            )}
             <Row label={t('bookingFee')} value={money.format(quote.booking_fee_amount)} />
             <Row
               label={t('cardFee')}

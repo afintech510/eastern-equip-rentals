@@ -36,7 +36,11 @@ export default function QuoteSummary({
         <p className="font-mono text-sm text-ind-steel">{t('loading')}</p>
       ) : error ? (
         <p className="font-mono text-sm text-ind-danger">
-          {error.code === 'MAX_DURATION' ? error.message : t('unavailable')}
+          {error.code === 'DELIVERY_OUT_OF_RANGE'
+            ? t('outOfRange')
+            : error.code === 'MAX_DURATION'
+              ? error.message
+              : t('unavailable')}
         </p>
       ) : quote && !quote.available ? (
         <p className="font-mono text-sm text-ind-danger">{t('unavailable')}</p>
@@ -46,6 +50,9 @@ export default function QuoteSummary({
             label={`${t('subtotal')} · ${t('days', { days: quote.rental_days })}`}
             value={money(quote.rental_subtotal)}
           />
+          {quote.delivery_fee > 0 && (
+            <Row label={t('deliveryFee')} value={money(quote.delivery_fee)} />
+          )}
           <Row label={t('tax')} value={money(quote.tax_amount)} />
           <div className="border-t-2 border-ind-black my-1" />
           <Row label={t('total')} value={money(quote.total)} bold />
