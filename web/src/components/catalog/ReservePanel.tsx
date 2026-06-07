@@ -18,9 +18,11 @@ export default function ReservePanel({
   const [error, setError] = useState<QuoteError | null>(null);
   const [loading, setLoading] = useState(false);
   const [hasRange, setHasRange] = useState(false);
+  const [range, setRange] = useState<{ start: string; end: string } | null>(null);
 
-  async function onRangeChange(range: { start: string; end: string } | null) {
-    if (!range) {
+  async function onRangeChange(next: { start: string; end: string } | null) {
+    setRange(next);
+    if (!next) {
       setHasRange(false);
       setQuote(null);
       setError(null);
@@ -31,8 +33,8 @@ export default function ReservePanel({
     setError(null);
     const result = await postQuote({
       product_id: productId,
-      start_date: range.start,
-      end_date: range.end,
+      start_date: next.start,
+      end_date: next.end,
       fulfillment: 'pickup',
     });
     setLoading(false);
@@ -44,6 +46,11 @@ export default function ReservePanel({
     }
   }
 
+  const reserveHref =
+    range && quote?.available
+      ? `/reserve/${productId}?start=${range.start}&end=${range.end}`
+      : null;
+
   return (
     <div className="flex flex-col gap-4">
       <AvailabilityCalendar
@@ -51,7 +58,13 @@ export default function ReservePanel({
         maxRentalDays={maxRentalDays}
         onRangeChange={onRangeChange}
       />
-      <QuoteSummary quote={quote} error={error} loading={loading} hasRange={hasRange} />
+      <QuoteSummary
+        quote={quote}
+        error={error}
+        loading={loading}
+        hasRange={hasRange}
+        reserveHref={reserveHref}
+      />
     </div>
   );
 }

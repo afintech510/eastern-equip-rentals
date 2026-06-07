@@ -95,6 +95,68 @@ export async function postQuote(body: {
   return { quote: data as Quote };
 }
 
+export type Reservation = {
+  rental_id: string;
+  booking_fee_amount: number;
+  card_service_fee: number;
+  booking_fee_client_secret: string | null;
+  hold_expires_at: string;
+};
+
+export type ReservationGate = {
+  rental_id: string;
+  status: string;
+  paid: boolean;
+  license_ok: boolean;
+  contract_signed: boolean;
+  waiver_signed: boolean;
+  booking_fee_amount: number;
+  balance_due: number;
+  total: number;
+  start_date: string;
+  end_date: string;
+  product_name: string | null;
+};
+
+// Authenticated calls — pass the Supabase access token.
+export async function createReservation(
+  token: string,
+  body: {
+    product_id: string;
+    start_date: string;
+    end_date: string;
+    fulfillment?: 'pickup' | 'delivery';
+    towing_ack?: boolean;
+  },
+): Promise<{ reservation: Reservation } | { error: QuoteError }> {
+  const res = await fetch(`${apiBase()}/api/v1/reservations`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    cache: 'no-store',
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    const detail = data?.detail ?? {};
+    return {
+      error: { code: detail.code ?? 'ERROR', message: detail.message ?? 'Reservation failed' },
+    };
+  }
+  return { reservation: data as Reservation };
+}
+
+export async function getReservation(
+  token: string,
+  rentalId: string,
+): Promise<ReservationGate | null> {
+  const res = await fetch(`${apiBase()}/api/v1/reservations/${rentalId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) return null;
+  return res.json() as Promise<ReservationGate>;
+}
+
 export function getAvailability(
   productId: string,
   start: string,

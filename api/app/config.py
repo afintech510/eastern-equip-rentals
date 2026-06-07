@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     # Integrations (wired in later phases — empty until keys provided)
     google_distance_matrix_api_key: str = ""
     stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
 
 
 @lru_cache

@@ -95,6 +95,18 @@ def units_free_for_span(svc, product_id: str, start: date, end: date) -> tuple[i
     return units_free_pure(unit_ids, rentals, start, end), total
 
 
+def free_unit_ids(svc, product_id: str, start: date, end: date) -> list[str]:
+    """Ordered list of unit ids with no overlapping rental for [start,end].
+    The reservation handler tries these in order (insert-retry, REV-003); the
+    exclusion constraint is the real guard against races."""
+    unit_ids = _available_unit_ids(svc, product_id)
+    if not unit_ids:
+        return []
+    rentals = _blocking_rentals(svc, unit_ids, start, end)
+    occupied = {r["unit_id"] for r in rentals if overlaps(r["start"], r["end"], start, end)}
+    return [uid for uid in unit_ids if uid not in occupied]
+
+
 def calendar_for_month(svc, product_id: str, year: int, month: int) -> dict:
     unit_ids = _available_unit_ids(svc, product_id)
     first = date(year, month, 1)

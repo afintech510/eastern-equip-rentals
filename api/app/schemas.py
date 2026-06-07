@@ -31,6 +31,38 @@ class QuoteIn(BaseModel):
     delivery_address: str | None = None
 
 
+class ReservationIn(BaseModel):
+    product_id: str
+    start_date: date
+    end_date: date
+    fulfillment: str = Field(default="pickup", pattern="^(pickup|delivery)$")
+    delivery_address: str | None = None
+    towing_ack: bool = False
+
+
+class ReservationOut(BaseModel):
+    rental_id: str
+    booking_fee_amount: float
+    card_service_fee: float
+    booking_fee_client_secret: str | None
+    hold_expires_at: str
+
+
+class GateOut(BaseModel):
+    rental_id: str
+    status: str
+    paid: bool
+    license_ok: bool
+    contract_signed: bool
+    waiver_signed: bool
+    booking_fee_amount: float
+    balance_due: float
+    total: float
+    start_date: str
+    end_date: str
+    product_name: str | None = None
+
+
 class QuoteOut(BaseModel):
     rental_subtotal: float
     discount_amount: float

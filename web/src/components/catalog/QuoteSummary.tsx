@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import type { Quote, QuoteError } from '@/lib/api';
 
@@ -8,11 +9,13 @@ export default function QuoteSummary({
   error,
   loading,
   hasRange,
+  reserveHref,
 }: {
   quote: Quote | null;
   error: QuoteError | null;
   loading: boolean;
   hasRange: boolean;
+  reserveHref: string | null;
 }) {
   const t = useTranslations('quote');
   const locale = useLocale();
@@ -61,15 +64,15 @@ export default function QuoteSummary({
             </p>
           )}
 
-          <button
-            type="button"
-            className="btn-primary mt-3 disabled:opacity-50"
-            disabled
-            title={t('reserveNote')}
-          >
-            {t('reserveCta')}
-          </button>
-          <p className="text-[11px] text-ind-steel uppercase tracking-widest">{t('reserveNote')}</p>
+          {reserveHref ? (
+            <Link href={reserveHref} className="btn-primary mt-3 inline-block text-center">
+              {t('reserveCta')}
+            </Link>
+          ) : (
+            <button type="button" className="btn-primary mt-3 opacity-50" disabled>
+              {t('reserveCta')}
+            </button>
+          )}
         </div>
       ) : null}
     </div>

@@ -4,3 +4,4 @@ pydantic==2.8.2
 pydantic-settings==2.4.0
 supabase==2.6.0
 redis==5.0.8
+stripe==10.10.0
