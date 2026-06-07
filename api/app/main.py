@@ -74,13 +74,25 @@ app.add_middleware(
 )
 
 # Routers
-from app.routers import admin_inventory, catalog, quote, reservations, webhooks  # noqa: E402
+from app.routers import (  # noqa: E402
+    account,
+    admin_inventory,
+    admin_ops,
+    catalog,
+    documents,
+    quote,
+    reservations,
+    webhooks,
+)
 
 app.include_router(catalog.router)
 app.include_router(quote.router)
 app.include_router(reservations.router)
+app.include_router(account.router)
+app.include_router(documents.router)
 app.include_router(webhooks.router)
 app.include_router(admin_inventory.router)
+app.include_router(admin_ops.router)
 
 
 @app.get("/health")

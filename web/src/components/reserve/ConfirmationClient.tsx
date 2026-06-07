@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { getReservation, type ReservationGate } from '@/lib/api';
+import { getDocuments, getReservation, type DocItem, type ReservationGate } from '@/lib/api';
 import { createClient } from '@/lib/supabase/client';
 
 export default function ConfirmationClient({ rentalId }: { rentalId: string }) {
@@ -18,6 +18,7 @@ export default function ConfirmationClient({ rentalId }: { rentalId: string }) {
     [locale],
   );
   const [gate, setGate] = useState<ReservationGate | null>(null);
+  const [docs, setDocs] = useState<DocItem[]>([]);
   const [tries, setTries] = useState(0);
 
   // Poll a few times — the webhook flips status to "reserved" server-side just
@@ -31,6 +32,11 @@ export default function ConfirmationClient({ rentalId }: { rentalId: string }) {
       const g = await getReservation(token, rentalId);
       if (!active) return;
       setGate(g);
+      try {
+        setDocs(await getDocuments(token, rentalId));
+      } catch {
+        /* documents not ready / e-sign unconfigured */
+      }
       if (g && g.status === 'pending_fee' && tries < 5) {
         setTimeout(() => setTries((n) => n + 1), 1500);
       }
@@ -40,6 +46,8 @@ export default function ConfirmationClient({ rentalId }: { rentalId: string }) {
       active = false;
     };
   }, [rentalId, tries]);
+
+  const tDocs = useTranslations('docs');
 
   const confirmed = gate ? gate.status !== 'pending_fee' : false;
 
@@ -93,6 +101,48 @@ export default function ConfirmationClient({ rentalId }: { rentalId: string }) {
           <p className="font-mono text-[11px] text-ind-steel uppercase tracking-widest mt-2">
             {t('nextNote')}
           </p>
+        </div>
+      )}
+
+      {/* Paperwork actions */}
+      {gate && confirmed && (
+        <div className="card-ind p-6 flex flex-col gap-3">
+          <h2 className="font-heading text-3xl uppercase tracking-wide">{tDocs('title')}</h2>
+          {!gate.license_ok && (
+            <Link href="/account" className="btn-outline self-start">
+              {tDocs('uploadLicenseFirst')}
+            </Link>
+          )}
+          {docs.length === 0 ? (
+            <p className="font-mono text-sm text-ind-steel">{tDocs('unconfigured')}</p>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {docs.map((d) => (
+                <li
+                  key={d.doc_type}
+                  className="flex items-center justify-between gap-3 font-mono text-sm"
+                >
+                  <span>{tDocs(d.doc_type)}</span>
+                  {d.status === 'completed' || d.status === 'manual_override' ? (
+                    <span className="text-ind-steel">{tDocs('signed')}</span>
+                  ) : d.signing_url ? (
+                    <a
+                      href={d.signing_url}
+                      className="btn-primary"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {tDocs('sign')}
+                    </a>
+                  ) : (
+                    <span className="text-ind-steel">
+                      {tDocs(d.status === 'sent' ? 'sent' : 'pending')}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 

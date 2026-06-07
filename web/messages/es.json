@@ -153,8 +153,46 @@
   "account": {
     "title": "Consola de Operador",
     "authedAs": ">>> Autenticado como {email}",
-    "body": "El perfil, la carga de licencia y los trabajos activos se implementan en la Fase 03. Su cuenta está aprovisionada y lista.",
     "openAdmin": "Abrir Oficina del Patio",
-    "logout": "Cerrar Sesión"
+    "logout": "Cerrar Sesión",
+    "profile": "Perfil",
+    "fullName": "Nombre Completo",
+    "phone": "Teléfono",
+    "save": "Guardar",
+    "saved": "Guardado.",
+    "license": "Licencia de Conducir",
+    "licenseStatus": "Estado",
+    "licNone": "No cargada",
+    "licPending": "En revisión",
+    "licApproved": "Aprobada",
+    "licRejected": "Rechazada — vuelva a cargarla",
+    "licUpload": "Cargar Licencia",
+    "licUploading": "Cargando…",
+    "licHint": "Foto clara de su licencia de conducir (JPG/PNG/PDF).",
+    "myRentals": "Mis Trabajos",
+    "noRentals": "Aún no tiene rentas.",
+    "viewRental": "Ver / Próximos Pasos",
+    "statusLabel": "Estado"
+  },
+  "adminlic": {
+    "title": "Revisión de Licencias",
+    "empty": "No hay licencias por revisar.",
+    "view": "Ver imagen",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "reason": "Motivo (opcional)",
+    "approved": "Aprobada",
+    "rejected": "Rechazada"
+  },
+  "docs": {
+    "title": "Documentación de Renta",
+    "contract": "Contrato de Renta",
+    "waiver": "Exención de Responsabilidad",
+    "sign": "Firmar Ahora",
+    "signed": "Firmado ✓",
+    "sent": "Esperando firma",
+    "pending": "Preparando…",
+    "uploadLicenseFirst": "Cargue su licencia de conducir para continuar.",
+    "unconfigured": "La firma electrónica aún no está habilitada."
   }
 }

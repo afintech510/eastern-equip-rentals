@@ -157,6 +157,56 @@ export async function getReservation(
   return res.json() as Promise<ReservationGate>;
 }
 
+export type MeProfile = {
+  id: string;
+  email: string;
+  full_name: string;
+  phone: string | null;
+  license_status: 'none' | 'pending' | 'approved' | 'rejected';
+  loyalty_tier: string;
+};
+
+export type MyRental = {
+  id: string;
+  status: string;
+  start_date: string;
+  end_date: string;
+  total: number;
+  booking_fee_amount: number;
+  balance_amount: number;
+  product_name: string | null;
+};
+
+export type DocItem = {
+  doc_type: 'contract' | 'waiver';
+  status: string;
+  signing_url: string | null;
+};
+
+async function authJSON<T>(token: string, path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${apiBase()}/api/v1${path}`, {
+    ...init,
+    headers: {
+      ...(init?.headers ?? {}),
+      Authorization: `Bearer ${token}`,
+      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+    },
+    cache: 'no-store',
+  });
+  if (res.status === 204) return undefined as T;
+  if (!res.ok) throw new Error(`API ${res.status} ${path}`);
+  return res.json() as Promise<T>;
+}
+
+export const getMe = (token: string) => authJSON<MeProfile>(token, '/me');
+export const updateMe = (token: string, patch: Record<string, unknown>) =>
+  authJSON(token, '/me', { method: 'PATCH', body: JSON.stringify(patch) });
+export const registerLicense = (token: string, storage_path: string) =>
+  authJSON(token, '/license', { method: 'POST', body: JSON.stringify({ storage_path }) });
+export const getMyRentals = (token: string) => authJSON<MyRental[]>(token, '/me/rentals');
+export const getDocuments = (token: string, rentalId: string) =>
+  authJSON<DocItem[]>(token, `/rentals/${rentalId}/documents`);
+
 export function getAvailability(
   productId: string,
   start: string,

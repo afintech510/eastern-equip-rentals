@@ -153,8 +153,46 @@
   "account": {
     "title": "Operator Console",
     "authedAs": ">>> Authenticated as {email}",
-    "body": "Profile, license upload, and active jobs deploy in Phase 03. Your account is provisioned and ready.",
     "openAdmin": "Open Yard Office",
-    "logout": "Log Out"
+    "logout": "Log Out",
+    "profile": "Profile",
+    "fullName": "Full Name",
+    "phone": "Phone",
+    "save": "Save",
+    "saved": "Saved.",
+    "license": "Driver's License",
+    "licenseStatus": "Status",
+    "licNone": "Not uploaded",
+    "licPending": "Pending review",
+    "licApproved": "Approved",
+    "licRejected": "Rejected — please re-upload",
+    "licUpload": "Upload License",
+    "licUploading": "Uploading…",
+    "licHint": "Clear photo of your driver's license (JPG/PNG/PDF).",
+    "myRentals": "My Jobs",
+    "noRentals": "No rentals yet.",
+    "viewRental": "View / What's Next",
+    "statusLabel": "Status"
+  },
+  "adminlic": {
+    "title": "License Review",
+    "empty": "No licenses awaiting review.",
+    "view": "View image",
+    "approve": "Approve",
+    "reject": "Reject",
+    "reason": "Reason (optional)",
+    "approved": "Approved",
+    "rejected": "Rejected"
+  },
+  "docs": {
+    "title": "Rental Paperwork",
+    "contract": "Rental Contract",
+    "waiver": "Liability Waiver",
+    "sign": "Sign Now",
+    "signed": "Signed ✓",
+    "sent": "Awaiting signature",
+    "pending": "Preparing…",
+    "uploadLicenseFirst": "Upload your driver's license to continue.",
+    "unconfigured": "E-signing isn't enabled yet."
   }
 }

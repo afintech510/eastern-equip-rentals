@@ -31,6 +31,25 @@ class QuoteIn(BaseModel):
     delivery_address: str | None = None
 
 
+class LicenseIn(BaseModel):
+    # Client uploads to the private 'licenses' bucket (owner RLS), then registers
+    # the path here. Path convention: licenses/{auth_user_id}/<file>.
+    storage_path: str
+
+
+class LicenseDecisionIn(BaseModel):
+    decision: str = Field(pattern="^(approved|rejected)$")
+    reason: str | None = None
+
+
+class ProfileUpdate(BaseModel):
+    full_name: str | None = None
+    phone: str | None = None
+    transactional_sms: bool | None = None
+    sms_marketing_opt_in: bool | None = None
+    email_marketing_opt_in: bool | None = None
+
+
 class ReservationIn(BaseModel):
     product_id: str
     start_date: date

@@ -1,11 +1,12 @@
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
+import AccountClient from '@/components/account/AccountClient';
 
 export const metadata = { title: 'Account — Eastern Rentals' };
+export const dynamic = 'force-dynamic';
 
-// Auth-gated landing. Phase 03 builds the full account UI (profile, license,
-// rentals); this is the minimal protected page that completes the auth flow.
+// Auth-gated console: profile, license upload, and rentals (F-012/13).
 export default async function AccountPage() {
   const supabase = createClient();
   const {
@@ -31,7 +32,6 @@ export default async function AccountPage() {
         <p className="font-mono text-sm text-ind-steel mt-2 uppercase tracking-widest">
           {t('authedAs', { email: user.email ?? '' })}
         </p>
-        <p className="font-body mt-4 text-ind-black/80">{t('body')}</p>
         <div className="mt-6 flex flex-wrap gap-3">
           {isAdmin && (
             <a href="/admin/inventory" className="btn-primary">
@@ -45,6 +45,8 @@ export default async function AccountPage() {
           </form>
         </div>
       </div>
+
+      <AccountClient />
     </section>
   );
 }
