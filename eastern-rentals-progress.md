@@ -10,7 +10,7 @@
 | 00 | Environment & Theme Foundation | ✅ | claude (2026-06-06) | — | Theme §4.5 wired; web build green; Docker not run locally |
 | 01 | Schema & Auth Foundation | 🔍 | claude (2026-06-06) | — | **Human gate after** (schema/RLS). Applied+asserted in CI (PG15) AND applied+verified on live Supabase (PG17.6, 2026-06-07). Pending: owner admin signup + review sign-off |
 | 02a | Catalog, Inventory & Availability | ✅ | claude (2026-06-07) | — | Catalog/detail/calendar + availability API + admin CRUD; web build green; live API smoke ALL PASS; concurrency proof in CI |
-| 02b | Reservation, Quote & Booking-Fee Payment | 🔨 | claude (2026-06-07) | — | **Human gate after** (money). Quote engine (§3.2, V3-001 clamp, dumpster percent_down) + live price preview DONE & verified live. Reservation create + Stripe booking-fee PI + webhook pending Stripe test keys |
+| 02b | Reservation, Quote & Booking-Fee Payment | 🔍 | claude (2026-06-07) | — | **Human gate after** (money). Quote + reservation insert-retry + Stripe booking-fee PI + signature-verified webhook → reserved. **Verified live end-to-end (Stripe TEST mode)**. Delivery + TTL job deferred. Switch to live Stripe keys only at pre-launch |
 | 03 | Accounts, Paperwork, Gate & Handover | ⬜ | — | — | **Human gate after** (gate/handover) |
 | 04 | Comms, CRM, Ops & Unit Swap | ⬜ | — | — | — |
 | 05 | Local SEO & Launch | ⬜ | — | — | Parallel w/ 02b–04 after 02a |
@@ -26,7 +26,7 @@
 - **00** — ✅ web build+lint green / theme ported verbatim (§4.5) / fonts via next/font / `/health` 200 / no secrets / Docker compose authored (not run on a live daemon yet)
 - **01** — 🔍 schema matches §2.2 / RLS escalation blocked (column-scoped) / exclusion constraint correct / illegal transition rejected / config check / auth flows built — all asserted in CI `db` job (PG15); live Supabase apply + end-to-end auth pending owner
 - **02a** — ✅ catalog+detail+calendar (keyboard/aria) / availability mirrors §2.5 / admin CRUD is_admin-gated / DB concurrency proof in CI / live API smoke ALL PASS
-- **02b** — ⬜ quote formula + clamp + dumpster mode / booking-fee flow / delivery radius
+- **02b** — 🔍 quote formula + clamp + dumpster flat-fee / reservation insert-retry / booking-fee PI + webhook → reserved (verified live, TEST Stripe) / delivery deferred (no Distance Matrix key)
 - **03** — ⬜ gate enforced / handover ordering / webhook idempotent
 - **04** — ⬜ comms idempotent / swap addendum / photo RLS
 - **05** — ⬜ town pages indexable / import consented
