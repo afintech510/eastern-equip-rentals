@@ -30,13 +30,15 @@
     "towable": "Remolcable",
     "noImage": "Sin imagen",
     "perDay": "/día",
-    "delivered": "Entrega · Cotización"
+    "delivered": "Entrega · Cotización",
+    "flat": "{price} fijo"
   },
   "detail": {
     "back": "Volver a la Lista",
     "availability": "Disponibilidad",
     "perDay": "/ día",
     "deliveredQuote": "Entrega · Cotización al reservar",
+    "flatRate": "{price} fijo · entrega",
     "maxRental": "Renta máxima: {days} días",
     "deposit": "Depósito: 30% del subtotal de renta (se aplica en la entrega)",
     "towingRequired": "Remolcable — se requiere confirmación de remolque",

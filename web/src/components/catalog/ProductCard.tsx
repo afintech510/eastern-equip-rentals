@@ -5,9 +5,11 @@ import type { Product } from '@/lib/api';
 export default async function ProductCard({ product }: { product: Product }) {
   const t = await getTranslations('catalog');
   const rateLabel =
-    product.booking_fee_mode === 'percent_down' || product.daily_rate === 0
-      ? t('delivered')
-      : `$${product.daily_rate.toFixed(0)}${t('perDay')}`;
+    product.booking_fee_mode === 'percent_down'
+      ? t('flat', { price: `$${product.daily_rate.toFixed(0)}` })
+      : product.daily_rate === 0
+        ? t('delivered')
+        : `$${product.daily_rate.toFixed(0)}${t('perDay')}`;
 
   return (
     <Link

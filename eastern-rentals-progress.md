@@ -10,7 +10,7 @@
 | 00 | Environment & Theme Foundation | ✅ | claude (2026-06-06) | — | Theme §4.5 wired; web build green; Docker not run locally |
 | 01 | Schema & Auth Foundation | 🔍 | claude (2026-06-06) | — | **Human gate after** (schema/RLS). Applied+asserted in CI (PG15) AND applied+verified on live Supabase (PG17.6, 2026-06-07). Pending: owner admin signup + review sign-off |
 | 02a | Catalog, Inventory & Availability | ✅ | claude (2026-06-07) | — | Catalog/detail/calendar + availability API + admin CRUD; web build green; live API smoke ALL PASS; concurrency proof in CI |
-| 02b | Reservation, Quote & Booking-Fee Payment | ⬜ | — | — | **Human gate after** (money) |
+| 02b | Reservation, Quote & Booking-Fee Payment | 🔨 | claude (2026-06-07) | — | **Human gate after** (money). Quote engine (§3.2, V3-001 clamp, dumpster percent_down) + live price preview DONE & verified live. Reservation create + Stripe booking-fee PI + webhook pending Stripe test keys |
 | 03 | Accounts, Paperwork, Gate & Handover | ⬜ | — | — | **Human gate after** (gate/handover) |
 | 04 | Comms, CRM, Ops & Unit Swap | ⬜ | — | — | — |
 | 05 | Local SEO & Launch | ⬜ | — | — | Parallel w/ 02b–04 after 02a |

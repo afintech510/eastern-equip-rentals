@@ -39,7 +39,10 @@ def compute_quote(
     """Pure pricing. `cfg` is the config singleton row. `delivery_fee` is already
     resolved (0 for pickup). Returns a dict of 2-dp floats matching §3.2."""
     dr = d(daily_rate)
-    subtotal = rhu(dr * days)
+    # percent_down products (dumpsters) are FLAT-priced: the daily_rate column
+    # holds the flat fee (e.g. $850 incl. up to 10 tons, up to 2 weeks) and the
+    # subtotal does not multiply by days. Standard products bill per day.
+    subtotal = rhu(dr) if booking_fee_mode == "percent_down" else rhu(dr * days)
     discount = Decimal("0.00")  # disabled at launch (F-010/F-011)
     delivery = rhu(d(delivery_fee))
 

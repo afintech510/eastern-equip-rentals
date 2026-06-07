@@ -39,13 +39,15 @@ def test_deposit_strategy_over_5_days_charges():
     assert q["deposit_strategy"] == "charge"  # > 5 days
 
 
-def test_dumpster_percent_down():
-    # percent_down: booking fee = 0.30 * subtotal, no per-day term.
-    q = compute_quote(daily_rate=400, booking_fee_mode="percent_down", days=3, cfg=CFG)
-    assert q["rental_subtotal"] == 1200.00
-    # booking fee = 0.30 * 1200 = 360 (not 0.30*400 + 100*2 = 320)
-    assert q["booking_fee_amount"] == 360.00
-    assert q["total"] == 1305.00  # 1200 * 1.0875
+def test_dumpster_flat_fee_percent_down():
+    # Dumpsters are FLAT: $850 regardless of days; subtotal does NOT × days.
+    q5 = compute_quote(daily_rate=850, booking_fee_mode="percent_down", days=5, cfg=CFG)
+    q14 = compute_quote(daily_rate=850, booking_fee_mode="percent_down", days=14, cfg=CFG)
+    assert q5["rental_subtotal"] == 850.00
+    assert q14["rental_subtotal"] == 850.00  # same flat fee at 14 days
+    assert q5["booking_fee_amount"] == 255.00  # 0.30 * 850
+    assert q5["total"] == 924.38  # 850 * 1.0875
+    assert q5["balance_due"] == 669.38
 
 
 def test_delivery_is_taxed_in_base():

@@ -53,9 +53,11 @@ export default async function ProductDetailPage({ params }: { params: { productI
               {product.name}
             </h1>
             <p className="font-mono text-2xl">
-              {isDumpster || product.daily_rate === 0
-                ? t('deliveredQuote')
-                : `$${product.daily_rate.toFixed(2)} ${t('perDay')}`}
+              {isDumpster
+                ? t('flatRate', { price: `$${product.daily_rate.toFixed(2)}` })
+                : product.daily_rate === 0
+                  ? t('deliveredQuote')
+                  : `$${product.daily_rate.toFixed(2)} ${t('perDay')}`}
             </p>
             {product.description && (
               <p className="font-body text-ind-black/80 mt-1">{product.description}</p>

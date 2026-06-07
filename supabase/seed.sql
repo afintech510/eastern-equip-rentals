@@ -50,11 +50,9 @@ FROM (VALUES
   ('Wood Chipper',      'landscaping', 'Tow-behind chipper for brush and limbs up to 6".',                    275.00, 'standard',     true,  30),
   ('Concrete Mixer',    'concrete',    'Towable concrete/mortar mixer.',                                       95.00,  'standard',     true,  30),
   ('Equipment Trailer', 'hauling',     'Heavy-duty equipment transport trailer.',                              120.00, 'standard',     true,  30),
-  -- SPEC-AMBIGUITY: dumpster pricing model (flat vs per-day) is owner-TBD.
-  -- daily_rate here is a placeholder so quotes aren't $0; percent_down booking
-  -- fee = 30% of subtotal (subtotal = daily_rate × days). Owner sets real prices.
-  ('10-Yard Dumpster',  'dumpster',    'Roll-off dumpster, delivered and picked up.',                          450.00, 'percent_down', false, 30),
-  ('20-Yard Dumpster',  'dumpster',    'Roll-off dumpster, delivered and picked up.',                          600.00, 'percent_down', false, 30)
+  -- Dumpsters are FLAT-priced (percent_down): daily_rate holds the flat fee and
+  -- pricing.py does not multiply by days. $850 incl. up to 10 tons, up to 2 wks.
+  ('20-Yard Dumpster',  'dumpster',    '20-yard roll-off · flat rate, includes up to 10 tons of debris, up to 2 weeks. Delivered & picked up.', 850.00, 'percent_down', false, 14)
 ) AS v(name, category, description, daily_rate, booking_fee_mode, requires_towing_ack, max_rental_days)
 WHERE NOT EXISTS (SELECT 1 FROM public.products p WHERE p.name = v.name);
 
@@ -70,9 +68,8 @@ FROM (VALUES
   ('Concrete Mixer',    'Concrete Mixer #1'),
   ('Equipment Trailer', 'Equipment Trailer #1'),
   ('Equipment Trailer', 'Equipment Trailer #2'),
-  ('10-Yard Dumpster',  '10-Yard Dumpster #1'),
-  ('10-Yard Dumpster',  '10-Yard Dumpster #2'),
-  ('20-Yard Dumpster',  '20-Yard Dumpster #1')
+  ('20-Yard Dumpster',  '20-Yard Dumpster #1'),
+  ('20-Yard Dumpster',  '20-Yard Dumpster #2')
 ) AS u(product_name, label)
 JOIN public.products p ON p.name = u.product_name
 WHERE NOT EXISTS (SELECT 1 FROM public.units x WHERE x.label = u.label);

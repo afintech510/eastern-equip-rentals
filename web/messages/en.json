@@ -30,13 +30,15 @@
     "towable": "Towable",
     "noImage": "No image",
     "perDay": "/day",
-    "delivered": "Delivered · Quote"
+    "delivered": "Delivered · Quote",
+    "flat": "{price} flat"
   },
   "detail": {
     "back": "Back to Roster",
     "availability": "Availability",
     "perDay": "/ day",
     "deliveredQuote": "Delivered · Quote at reservation",
+    "flatRate": "{price} flat · delivered",
     "maxRental": "Max rental: {days} days",
     "deposit": "Deposit: 30% of rental subtotal (placed at handover)",
     "towingRequired": "Towable — towing acknowledgment required",
