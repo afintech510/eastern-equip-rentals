@@ -105,7 +105,9 @@ export default async function Home() {
               <span className="font-stencil text-5xl text-ind-yellow [-webkit-text-stroke:2px_#1a1a1a] leading-none">
                 {String(n).padStart(2, '0')}
               </span>
-              <h3 className="font-heading text-2xl uppercase tracking-wide">{t(`step${n}Title`)}</h3>
+              <h3 className="font-heading text-2xl uppercase tracking-wide">
+                {t(`step${n}Title`)}
+              </h3>
               <p className="font-mono text-sm text-ind-black/70">{t(`step${n}Body`)}</p>
             </div>
           ))}

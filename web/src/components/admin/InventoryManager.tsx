@@ -264,7 +264,10 @@ export default function InventoryManager() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   {/* Photo thumbnail + uploader (public product-photos bucket) */}
-                  <label className="shrink-0 cursor-pointer group/photo" title="Upload / change photo">
+                  <label
+                    className="shrink-0 cursor-pointer group/photo"
+                    title="Upload / change photo"
+                  >
                     <div className="w-20 h-16 bg-ind-concrete border-2 border-ind-black overflow-hidden flex items-center justify-center relative">
                       {p.photo_url ? (
                         // eslint-disable-next-line @next/next/no-img-element

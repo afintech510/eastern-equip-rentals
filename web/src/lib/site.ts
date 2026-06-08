@@ -12,7 +12,10 @@ const PROD = 'https://rentals.benchworksai.com';
 
 // Hosts present in the Supabase Auth "Redirect URLs" allow-list.
 function isAllowlisted(origin: string): boolean {
-  return /^https:\/\/rentals\.benchworksai\.com$/.test(origin) || /^https?:\/\/localhost:3009$/.test(origin);
+  return (
+    /^https:\/\/rentals\.benchworksai\.com$/.test(origin) ||
+    /^https?:\/\/localhost:3009$/.test(origin)
+  );
 }
 
 export function siteOrigin(): string {
