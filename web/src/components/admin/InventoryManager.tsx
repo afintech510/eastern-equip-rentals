@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { adminFetch } from '@/lib/admin-api';
+import { createClient } from '@/lib/supabase/client';
 import type { Product } from '@/lib/api';
+
+const PHOTO_BUCKET = 'product-photos';
 
 type Unit = { id: string; label: string; serial_number: string | null; status: string };
 type Rate = { id: string; min_days: number; rate_type: string; value: number };
@@ -25,6 +28,7 @@ export default function InventoryManager() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [units, setUnits] = useState<Record<string, Unit[]>>({});
   const [rates, setRates] = useState<Record<string, Rate[]>>({});
+  const [uploading, setUploading] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -86,6 +90,30 @@ export default function InventoryManager() {
       await adminFetch(`/products/${id}`, { method: 'DELETE' });
       await load();
     });
+  }
+
+  async function uploadPhoto(p: Product, file: File) {
+    setError(null);
+    setUploading(p.id);
+    try {
+      const supabase = createClient();
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const path = `${p.id}/${Date.now()}.${ext}`;
+      const up = await supabase.storage
+        .from(PHOTO_BUCKET)
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (up.error) throw up.error;
+      const publicUrl = supabase.storage.from(PHOTO_BUCKET).getPublicUrl(path).data.publicUrl;
+      await adminFetch(`/products/${p.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ photo_url: publicUrl }),
+      });
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Photo upload failed');
+    } finally {
+      setUploading(null);
+    }
   }
 
   async function expand(pid: string) {
@@ -234,17 +262,48 @@ export default function InventoryManager() {
           {products.map((p) => (
             <div key={p.id} className="card-ind p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-ind-steel">
-                    {p.category}
-                  </span>
-                  <h3 className="font-heading text-2xl uppercase tracking-wide leading-none">
-                    {p.name}
-                  </h3>
-                  <span className="font-mono text-sm">
-                    ${p.daily_rate.toFixed(2)}/day · {p.booking_fee_mode} · max {p.max_rental_days}d
-                    {p.requires_towing_ack ? ' · towable' : ''}
-                  </span>
+                <div className="flex items-center gap-3">
+                  {/* Photo thumbnail + uploader (public product-photos bucket) */}
+                  <label className="shrink-0 cursor-pointer group/photo" title="Upload / change photo">
+                    <div className="w-20 h-16 bg-ind-concrete border-2 border-ind-black overflow-hidden flex items-center justify-center relative">
+                      {p.photo_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={p.photo_url}
+                          alt={p.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="hazard-stripes-light w-full h-full" aria-hidden="true" />
+                      )}
+                      <span className="absolute inset-0 flex items-center justify-center bg-ind-black/60 opacity-0 group-hover/photo:opacity-100 transition-opacity font-mono text-[9px] uppercase tracking-widest text-ind-yellow text-center">
+                        {uploading === p.id ? 'Uploading…' : 'Change'}
+                      </span>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={uploading === p.id}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) void uploadPhoto(p, f);
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                  <div>
+                    <span className="font-mono text-[10px] uppercase tracking-widest text-ind-steel">
+                      {p.category}
+                    </span>
+                    <h3 className="font-heading text-2xl uppercase tracking-wide leading-none">
+                      {p.name}
+                    </h3>
+                    <span className="font-mono text-sm">
+                      ${p.daily_rate.toFixed(2)}/day · {p.booking_fee_mode} · max{' '}
+                      {p.max_rental_days}d{p.requires_towing_ack ? ' · towable' : ''}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button type="button" className="btn-outline" onClick={() => toggleActive(p)}>

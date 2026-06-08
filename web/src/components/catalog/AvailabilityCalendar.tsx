@@ -225,6 +225,29 @@ export default function AvailabilityCalendar({
         </div>
       )}
 
+      {/* Legend — clarifies the day-state colors (esp. on mobile). */}
+      <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[11px] uppercase tracking-wide text-ind-steel">
+        <li className="flex items-center gap-1.5">
+          <span className="w-3 h-3 bg-ind-white border-2 border-ind-black" aria-hidden="true" />
+          {t('legendAvailable')}
+        </li>
+        <li className="flex items-center gap-1.5">
+          <span
+            className="w-3 h-3 hazard-stripes-light border-2 border-ind-black"
+            aria-hidden="true"
+          />
+          {t('legendBooked')}
+        </li>
+        <li className="flex items-center gap-1.5">
+          <span className="w-3 h-3 bg-ind-black border-2 border-ind-yellow" aria-hidden="true" />
+          {t('legendSelected')}
+        </li>
+        <li className="flex items-center gap-1.5">
+          <span className="w-3 h-3 bg-gray-300 border-2 border-ind-black" aria-hidden="true" />
+          {t('legendPast')}
+        </li>
+      </ul>
+
       <p aria-live="polite" className="sr-only">
         {notice}
       </p>

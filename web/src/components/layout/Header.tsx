@@ -44,6 +44,12 @@ export default function Header() {
             {t('nav.inventory')}
           </Link>
           <Link
+            href="/dumpsters"
+            className="font-heading text-2xl uppercase tracking-wider text-ind-white hover:text-ind-yellow transition-colors"
+          >
+            {t('nav.dumpsters')}
+          </Link>
+          <Link
             href="/account"
             className="font-heading text-2xl uppercase tracking-wider text-ind-white hover:text-ind-yellow transition-colors"
           >

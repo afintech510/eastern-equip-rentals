@@ -1,58 +1,140 @@
-import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
+import { getProducts, getTowns, type Product, type Town } from '@/lib/api';
+import ProductCard from '@/components/catalog/ProductCard';
 
-// Phase 00 placeholder home/catalog route — renders the shell in a "powered up"
-// empty state. Real catalog grid (F-001) lands in Phase 02a.
-export default function Home() {
-  const t = useTranslations('home');
+// Real landing page (F-001). Reads the API for featured units + service towns;
+// keep it dynamic so newly-activated products/towns appear.
+export const dynamic = 'force-dynamic';
+export const metadata = {
+  title: 'Eastern Rentals — Heavy Equipment & Dumpster Rentals, Center Moriches NY',
+  description:
+    'Reserve skid steers, mini excavators, chippers and 20-yard roll-off dumpsters online. Pickup in Center Moriches or delivery within 40 miles.',
+};
+
+export default async function Home() {
+  const t = await getTranslations('home');
+
+  let products: Product[] = [];
+  let towns: Town[] = [];
+  try {
+    [products, towns] = await Promise.all([getProducts(), getTowns()]);
+  } catch {
+    // Hero + CTAs still render if the API is briefly unreachable.
+  }
+
+  const featured = products
+    .filter((p) => p.booking_fee_mode !== 'percent_down' && p.active)
+    .slice(0, 3);
+
   return (
-    <section className="animate-powerOn">
-      {/* Roster header — bolt-down sheet with decorative corner screw holes */}
-      <div className="mb-8 border-b-8 border-ind-black pb-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 bg-ind-white p-6 shadow-heavy relative">
-        <span
-          className="absolute top-2 left-2 w-3 h-3 rounded-full bg-ind-concrete border-2 border-ind-black"
-          aria-hidden="true"
-        />
-        <span
-          className="absolute top-2 right-2 w-3 h-3 rounded-full bg-ind-concrete border-2 border-ind-black"
-          aria-hidden="true"
-        />
-        <span
-          className="absolute bottom-2 left-2 w-3 h-3 rounded-full bg-ind-concrete border-2 border-ind-black"
-          aria-hidden="true"
-        />
-        <span
-          className="absolute bottom-2 right-2 w-3 h-3 rounded-full bg-ind-concrete border-2 border-ind-black"
-          aria-hidden="true"
-        />
-
-        <div className="pl-4">
-          <h1 className="font-heading text-5xl font-bold text-ind-black tracking-wide uppercase m-0 leading-none">
+    <div className="animate-powerOn flex flex-col gap-12">
+      {/* Hero */}
+      <section className="relative bg-ind-black text-ind-white shadow-heavy border-b-8 border-ind-yellow overflow-hidden">
+        <div className="h-2 w-full hazard-stripes" aria-hidden="true" />
+        <div className="p-6 md:p-12 flex flex-col gap-5 max-w-3xl">
+          <span className="font-mono text-xs md:text-sm uppercase tracking-[0.2em] text-ind-yellow">
+            {t('kicker')}
+          </span>
+          <h1 className="font-heading text-5xl md:text-7xl uppercase tracking-wide leading-[0.95]">
             {t('title')}
           </h1>
-          <p className="font-mono text-ind-steel mt-2 text-sm uppercase font-bold tracking-widest">
-            {t('subtitle')}
-          </p>
+          <p className="font-body text-lg md:text-xl text-ind-white/80">{t('subtitle')}</p>
+          <div className="flex flex-col sm:flex-row gap-3 mt-2">
+            <Link href="/equipment" className="btn-primary text-center">
+              {t('browseCta')}
+            </Link>
+            <Link
+              href="/dumpsters"
+              className="btn-outline border-ind-yellow text-ind-yellow hover:bg-ind-yellow hover:text-ind-black text-center"
+            >
+              {t('dumpsterCta')}
+            </Link>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Powered-up empty state */}
-      <div className="card-ind p-10 md:p-16 flex flex-col items-center text-center gap-6">
-        <svg
-          width="72"
-          height="72"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="text-ind-black animate-[spin_10s_linear_infinite]"
-          aria-hidden="true"
-        >
-          <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z" />
-        </svg>
-        <h2 className="font-heading text-4xl uppercase tracking-wide">{t('poweredTitle')}</h2>
-        <p className="font-body text-lg max-w-xl text-ind-black/80">{t('poweredBody')}</p>
-        <button type="button" className="btn-primary">
-          {t('cta')}
-        </button>
-      </div>
-    </section>
+      {/* Featured equipment */}
+      {featured.length > 0 && (
+        <section className="flex flex-col gap-5">
+          <div className="flex items-end justify-between gap-4 border-b-4 border-ind-black pb-2">
+            <h2 className="font-heading text-3xl md:text-4xl uppercase tracking-wide">
+              {t('featuredTitle')}
+            </h2>
+            <Link href="/equipment" className="font-mono text-sm uppercase hover:text-ind-danger">
+              {t('viewAll')}
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {featured.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Dumpster callout */}
+      <section className="card-ind overflow-hidden flex flex-col md:flex-row">
+        <div className="md:w-1/2 aspect-[4/3] md:aspect-auto bg-ind-concrete border-b-4 md:border-b-0 md:border-r-4 border-ind-black">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/img/dumpster.jpg"
+            alt={t('dumpsterTitle')}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="md:w-1/2 p-6 md:p-10 flex flex-col gap-4 justify-center">
+          <h2 className="font-heading text-3xl md:text-4xl uppercase tracking-wide leading-none">
+            {t('dumpsterTitle')}
+          </h2>
+          <p className="font-body text-lg text-ind-black/80">{t('dumpsterBody')}</p>
+          <Link href="/dumpsters" className="btn-primary self-start">
+            {t('dumpsterCtaAlt')}
+          </Link>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="flex flex-col gap-5">
+        <h2 className="font-heading text-3xl md:text-4xl uppercase tracking-wide border-b-4 border-ind-black pb-2">
+          {t('howTitle')}
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((n) => (
+            <div key={n} className="card-ind p-6 flex flex-col gap-2">
+              <span className="font-stencil text-5xl text-ind-yellow [-webkit-text-stroke:2px_#1a1a1a] leading-none">
+                {String(n).padStart(2, '0')}
+              </span>
+              <h3 className="font-heading text-2xl uppercase tracking-wide">{t(`step${n}Title`)}</h3>
+              <p className="font-mono text-sm text-ind-black/70">{t(`step${n}Body`)}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Service areas */}
+      <section className="bg-ind-black text-ind-white p-6 md:p-10 shadow-heavy border-l-8 border-ind-yellow flex flex-col gap-4">
+        <h2 className="font-heading text-3xl md:text-4xl uppercase tracking-wide">
+          {t('areasTitle')}
+        </h2>
+        <p className="font-body text-lg text-ind-white/80 max-w-2xl">{t('areasBody')}</p>
+        {towns.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {towns.slice(0, 8).map((town) => (
+              <Link
+                key={town.id}
+                href={`/rent/${town.slug}`}
+                className="font-mono text-sm border-2 border-ind-yellow text-ind-yellow px-3 py-1 hover:bg-ind-yellow hover:text-ind-black transition-colors"
+              >
+                {town.name}
+              </Link>
+            ))}
+          </div>
+        )}
+        <Link href="/rent" className="btn-primary self-start mt-1">
+          {t('viewAreas')}
+        </Link>
+      </section>
+    </div>
   );
 }

@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 
 const items = [
   { href: '/equipment', key: 'inventory' },
+  { href: '/dumpsters', key: 'dumpsters' },
   { href: '/account', key: 'account' },
   { href: '/login', key: 'login' },
 ] as const;
@@ -29,7 +30,7 @@ export default function MobileNav() {
               <Link
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
-                className={`flex items-center justify-center py-4 font-heading text-xl uppercase tracking-wider transition-colors ${
+                className={`flex items-center justify-center py-4 px-1 text-center font-heading text-lg uppercase tracking-wide transition-colors ${
                   active ? 'text-ind-yellow' : 'text-ind-white hover:text-ind-yellow'
                 }`}
               >

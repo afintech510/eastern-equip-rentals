@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import AvailabilityCalendar from '@/components/catalog/AvailabilityCalendar';
 import QuoteSummary from '@/components/catalog/QuoteSummary';
@@ -116,6 +117,26 @@ export default function ReservePanel({
         hasRange={!!range}
         reserveHref={reserveHref}
       />
+
+      {/* Sticky mobile reserve bar — sits above the bottom nav once a valid,
+          available range is priced, so the CTA is always within thumb reach. */}
+      {reserveHref && quote?.available && (
+        <div className="md:hidden fixed bottom-0 inset-x-0 z-[60] bg-ind-yellow border-t-4 border-ind-black shadow-heavy">
+          <div className="flex items-center justify-between gap-3 px-4 py-3">
+            <div className="flex flex-col leading-tight">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-ind-black/70">
+                {t('total')}
+              </span>
+              <span className="font-heading text-2xl text-ind-black">
+                ${quote.total.toFixed(2)}
+              </span>
+            </div>
+            <Link href={reserveHref} className="btn-primary">
+              {t('reserveShort')} ›
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -22,6 +22,12 @@ export default function Footer() {
             {t('inventory')}
           </Link>
           <Link
+            href="/dumpsters"
+            className="font-heading uppercase tracking-wider hover:text-ind-yellow"
+          >
+            {t('dumpsters')}
+          </Link>
+          <Link
             href="/rent"
             className="font-heading uppercase tracking-wider hover:text-ind-yellow"
           >

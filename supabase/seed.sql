@@ -42,18 +42,18 @@ ON CONFLICT (id) DO UPDATE SET
 
 -- ---------- products (idempotent by name) ----------
 INSERT INTO public.products
-  (name, category, description, daily_rate, booking_fee_mode, requires_towing_ack, max_rental_days, active)
-SELECT v.name, v.category, v.description, v.daily_rate, v.booking_fee_mode, v.requires_towing_ack, v.max_rental_days, true
+  (name, category, description, daily_rate, booking_fee_mode, requires_towing_ack, max_rental_days, active, photo_url)
+SELECT v.name, v.category, v.description, v.daily_rate, v.booking_fee_mode, v.requires_towing_ack, v.max_rental_days, true, v.photo_url
 FROM (VALUES
-  ('Skid Steer',        'earthmoving', 'Compact track loader for grading, digging, and material handling.', 350.00, 'standard',     true,  30),
-  ('Mini Excavator',    'earthmoving', 'Tight-access digging and trenching.',                                 425.00, 'standard',     true,  30),
-  ('Wood Chipper',      'landscaping', 'Tow-behind chipper for brush and limbs up to 6".',                    275.00, 'standard',     true,  30),
-  ('Concrete Mixer',    'concrete',    'Towable concrete/mortar mixer.',                                       95.00,  'standard',     true,  30),
-  ('Equipment Trailer', 'hauling',     'Heavy-duty equipment transport trailer.',                              120.00, 'standard',     true,  30),
+  ('Skid Steer',        'earthmoving', 'Compact track loader for grading, digging, and material handling.', 350.00, 'standard',     true,  30, '/img/skid-steer.jpg'),
+  ('Mini Excavator',    'earthmoving', 'Tight-access digging and trenching.',                                 425.00, 'standard',     true,  30, '/img/mini-excavator.jpg'),
+  ('Wood Chipper',      'landscaping', 'Tow-behind chipper for brush and limbs up to 6".',                    275.00, 'standard',     true,  30, '/img/wood-chipper.jpg'),
+  ('Concrete Mixer',    'concrete',    'Towable concrete/mortar mixer.',                                       95.00,  'standard',     true,  30, '/img/concrete-mixer.jpg'),
+  ('Equipment Trailer', 'hauling',     'Heavy-duty equipment transport trailer.',                              120.00, 'standard',     true,  30, '/img/equipment-trailer.jpg'),
   -- Dumpsters are FLAT-priced (percent_down): daily_rate holds the flat fee and
   -- pricing.py does not multiply by days. $850 incl. up to 10 tons, up to 2 wks.
-  ('20-Yard Dumpster',  'dumpster',    '20-yard roll-off · flat rate, includes up to 10 tons of debris, up to 2 weeks. Delivered & picked up.', 850.00, 'percent_down', false, 14)
-) AS v(name, category, description, daily_rate, booking_fee_mode, requires_towing_ack, max_rental_days)
+  ('20-Yard Dumpster',  'dumpster',    '20-yard roll-off · flat rate, includes up to 10 tons of debris, up to 2 weeks. Delivered & picked up.', 850.00, 'percent_down', false, 14, '/img/dumpster.jpg')
+) AS v(name, category, description, daily_rate, booking_fee_mode, requires_towing_ack, max_rental_days, photo_url)
 WHERE NOT EXISTS (SELECT 1 FROM public.products p WHERE p.name = v.name);
 
 -- ---------- units (idempotent by label) ----------

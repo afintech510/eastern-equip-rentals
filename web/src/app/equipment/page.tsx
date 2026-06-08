@@ -23,8 +23,10 @@ export default async function EquipmentPage({
     error = e instanceof Error ? e.message : 'Failed to load fleet';
   }
 
-  const categories = Array.from(new Set(products.map((p) => p.category))).sort();
-  const shown = active ? products.filter((p) => p.category.toLowerCase() === active) : products;
+  // Dumpsters live on their own /dumpsters page (flat-fee carve-out, §3.2).
+  const fleet = products.filter((p) => p.booking_fee_mode !== 'percent_down');
+  const categories = Array.from(new Set(fleet.map((p) => p.category))).sort();
+  const shown = active ? fleet.filter((p) => p.category.toLowerCase() === active) : fleet;
 
   return (
     <section className="animate-powerOn">
