@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.config import get_settings
 from app.deps import get_current_user_id
+from app.ratelimit import rate_limit
 from app.signwell import create_document, get_document, signwell_ready
 from app.supa import service_client
 
@@ -119,7 +120,10 @@ def _owns_or_admin(svc, rental_id: str, user_id: str) -> dict:
     return r.data[0]
 
 
-@router.post("/rentals/{rental_id}/documents/send")
+@router.post(
+    "/rentals/{rental_id}/documents/send",
+    dependencies=[Depends(rate_limit("documents_send", limit=15, window_seconds=60))],
+)
 def trigger_send(rental_id: str, user_id: str = Depends(get_current_user_id)):
     svc = _svc()
     _owns_or_admin(svc, rental_id, user_id)

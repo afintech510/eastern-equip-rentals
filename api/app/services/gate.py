@@ -7,6 +7,18 @@ import logging
 logger = logging.getLogger("eastern-rentals-api")
 
 
+def gate_satisfied(rental_row: dict) -> bool:
+    """The four-flag release gate (F-017): a rental is ready for handover only
+    when the booking fee is paid, the license is approved, and both the contract
+    and waiver are signed. Pure — the unit of test (§9.2)."""
+    return bool(
+        rental_row.get("paid")
+        and rental_row.get("license_ok")
+        and rental_row.get("contract_signed")
+        and rental_row.get("waiver_signed")
+    )
+
+
 def recompute_and_advance(svc, rental_id: str) -> dict | None:
     """Recompute the gate flags from source state, then advance reserved →
     ready_for_pickup if all four are satisfied. Returns the updated rental row."""
@@ -20,7 +32,7 @@ def recompute_and_advance(svc, rental_id: str) -> dict | None:
     if not res.data:
         return None
     r = res.data[0]
-    gate_ok = r["paid"] and r["license_ok"] and r["contract_signed"] and r["waiver_signed"]
+    gate_ok = gate_satisfied(r)
     if gate_ok and r["status"] == "reserved":
         svc.table("rentals").update({"status": "ready_for_pickup"}).eq("id", rental_id).eq(
             "status", "reserved"

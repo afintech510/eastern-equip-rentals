@@ -46,6 +46,27 @@ services:
         limits:
           memory: 512M
 
+  # Background-job scheduler (Phase 06): hold-expiry, SignWell polling, retention
+  # purge. Reuses the api image; runs the blocking scheduler instead of uvicorn.
+  worker:
+    build:
+      context: ./api
+    container_name: eastern_worker
+    restart: unless-stopped
+    command: ["python", "-m", "app.worker"]
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    networks:
+      - eastern_net
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
   redis:
     image: redis:7-alpine
     container_name: eastern_redis

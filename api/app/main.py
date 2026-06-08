@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
+from app.middleware import RequestContextMiddleware, SecurityHeadersMiddleware
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("eastern-rentals-api")
@@ -72,6 +73,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Security headers + request-id/structured access logging (§7.3, §8.2). Added
+# after CORS so the outermost layer (last added) stamps every response.
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RequestContextMiddleware)
 
 # Routers
 from app.routers import (  # noqa: E402
@@ -79,6 +84,7 @@ from app.routers import (  # noqa: E402
     admin_crm,
     admin_handover,
     admin_inventory,
+    admin_jobs,
     admin_ops,
     catalog,
     documents,
@@ -97,6 +103,7 @@ app.include_router(admin_inventory.router)
 app.include_router(admin_ops.router)
 app.include_router(admin_handover.router)
 app.include_router(admin_crm.router)
+app.include_router(admin_jobs.router)
 
 
 @app.get("/health")

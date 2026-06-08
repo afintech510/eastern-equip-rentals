@@ -1,9 +1,10 @@
 """Quote + delivery endpoints (§3.2/§5.5, F-007/F-009/F-010). Server-authoritative
 pricing — no client-supplied amounts are trusted (REV-011)."""
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.config import get_settings
+from app.ratelimit import rate_limit
 from app.schemas import DeliveryQuoteIn, DeliveryQuoteOut, QuoteIn, QuoteOut
 from app.services.availability import units_free_for_span
 from app.services.delivery import quote_delivery
@@ -42,7 +43,11 @@ def delivery_quote(body: DeliveryQuoteIn):
     )
 
 
-@router.post("/quote", response_model=QuoteOut)
+@router.post(
+    "/quote",
+    response_model=QuoteOut,
+    dependencies=[Depends(rate_limit("quote", limit=60, window_seconds=60))],
+)
 def quote(body: QuoteIn):
     svc = _svc()
 

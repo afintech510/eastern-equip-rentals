@@ -44,6 +44,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/customers" className="btn-outline">
           Customers
         </Link>
+        <Link href="/admin/jobs" className="btn-outline">
+          Jobs
+        </Link>
       </nav>
       {children}
     </div>

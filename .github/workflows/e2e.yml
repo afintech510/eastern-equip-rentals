@@ -1,0 +1,54 @@
+name: E2E (Playwright)
+
+# Pre-deploy browser journeys (§9.1 — E2E runs pre-deploy, not on every push).
+# Manual: provide the target URL (staging/prod). The smoke + SEO specs need no
+# data; the full mutating journeys additionally need E2E_FULL + test creds set as
+# repo secrets.
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Base URL of the running stack to test
+        required: true
+        default: http://localhost:3009
+      full:
+        description: Run mutating journeys (needs TEST_USER_* secrets)
+        required: false
+        default: 'false'
+
+jobs:
+  e2e:
+    name: Playwright
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: e2e
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm install
+
+      - name: Install browsers
+        run: npm run install:browsers
+
+      - name: Run E2E
+        env:
+          E2E_BASE_URL: ${{ github.event.inputs.base_url }}
+          E2E_FULL: ${{ github.event.inputs.full == 'true' && '1' || '' }}
+          TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD }}
+          CI: 'true'
+        run: npm test
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
+          retention-days: 7

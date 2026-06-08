@@ -1,13 +1,16 @@
 """Customer account + license (§3.2, F-012/F-013). Auth required."""
 
 import logging
+from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.config import get_settings
 from app.deps import get_current_user_id
 from app.email import send_email
+from app.ratelimit import rate_limit
 from app.schemas import LicenseIn, ProfileUpdate
+from app.services.imaging import sanitize_license_image
 from app.supa import service_client
 
 logger = logging.getLogger("eastern-rentals-api")
@@ -64,7 +67,11 @@ def update_me(body: ProfileUpdate, user_id: str = Depends(get_current_user_id)):
     return {"status": "ok"}
 
 
-@router.post("/license", status_code=201)
+@router.post(
+    "/license",
+    status_code=201,
+    dependencies=[Depends(rate_limit("license_upload", limit=10, window_seconds=60))],
+)
 def upload_license(body: LicenseIn, user_id: str = Depends(get_current_user_id)):
     svc = _svc()
     c = _customer(svc, user_id)
@@ -75,8 +82,26 @@ def upload_license(body: LicenseIn, user_id: str = Depends(get_current_user_id))
             status_code=400, detail={"code": "BAD_PATH", "message": "Invalid storage path"}
         )
 
+    # Re-encode/sanitize the identity image in-place: strips EXIF/embedded
+    # payloads and rejects non-images (REV-022). Best-effort — a re-encode
+    # failure (e.g. Pillow absent) logs and continues so the flow never blocks.
+    sanitize_license_image("licenses", body.storage_path)
+
+    # purge_after windows the record for the retention job (V3-002); the job
+    # still re-checks legal_hold at purge time.
+    purge_after = None
+    cfg = svc.table("config").select("license_retention_months").eq("id", True).execute().data
+    if cfg:
+        months = int(cfg[0]["license_retention_months"])
+        purge_after = (date.today() + timedelta(days=30 * months)).isoformat()
+
     svc.table("license_uploads").insert(
-        {"customer_id": c["id"], "storage_path": body.storage_path, "status": "pending"}
+        {
+            "customer_id": c["id"],
+            "storage_path": body.storage_path,
+            "status": "pending",
+            "purge_after": purge_after,
+        }
     ).execute()
     # license_status is admin-only at the column level; service role may set it.
     svc.table("customers").update({"license_status": "pending"}).eq("id", c["id"]).execute()

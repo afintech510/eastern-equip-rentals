@@ -18,6 +18,7 @@ import stripe
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.deps import get_current_user_id
+from app.ratelimit import rate_limit
 from app.schemas import GateOut, ReservationIn, ReservationOut
 from app.services.availability import free_unit_ids
 from app.services.delivery import quote_delivery
@@ -72,7 +73,12 @@ def _is_conflict(exc: Exception) -> bool:
     return any(m.lower() in blob for m in _CONFLICT_MARKERS)
 
 
-@router.post("/reservations", response_model=ReservationOut, status_code=201)
+@router.post(
+    "/reservations",
+    response_model=ReservationOut,
+    status_code=201,
+    dependencies=[Depends(rate_limit("reservation", limit=20, window_seconds=60))],
+)
 def create_reservation(body: ReservationIn, user_id: str = Depends(get_current_user_id)):
     if not stripe_ready():
         raise HTTPException(

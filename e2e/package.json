@@ -1,0 +1,15 @@
+{
+  "name": "eastern-rentals-e2e",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Playwright E2E for Eastern Rentals (§9.3). Isolated from web/ so it can't perturb the Next.js build or web/package-lock.json.",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report",
+    "install:browsers": "playwright install --with-deps chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.47.2"
+  }
+}
