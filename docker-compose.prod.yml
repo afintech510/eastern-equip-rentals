@@ -7,6 +7,13 @@
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 services:
   web:
+    build:
+      args:
+        # Bake the real public origin into the client bundle so auth email links
+        # (password reset / signup confirmation) never point at a dev host.
+        NEXT_PUBLIC_BASE_URL: https://rentals.benchworksai.com
+    environment:
+      - NEXT_PUBLIC_BASE_URL=https://rentals.benchworksai.com
     networks:
       - eastern_net
       - hampton_nginx

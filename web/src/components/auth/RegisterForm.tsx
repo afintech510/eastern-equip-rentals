@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
+import { authCallbackUrl } from '@/lib/site';
 
 export default function RegisterForm() {
   const t = useTranslations('auth');
@@ -28,7 +29,7 @@ export default function RegisterForm() {
       password,
       options: {
         data: { full_name: fullName },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/account`,
+        emailRedirectTo: authCallbackUrl('/account'),
       },
     });
     setLoading(false);
