@@ -9,10 +9,16 @@ export async function GET(request: Request) {
   const next = searchParams.get('next') ?? '/account';
 
   if (code) {
-    const supabase = createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (!error) {
+        return NextResponse.redirect(`${origin}${next}`);
+      }
+    } catch {
+      // exchangeCodeForSession throws (not just returns an error) when the PKCE
+      // code_verifier cookie is missing — e.g. the link was opened in a
+      // different browser/device. Never let that 500; fall through gracefully.
     }
   }
 

@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { createClient } from '@/lib/supabase/client';
-import { authCallbackUrl } from '@/lib/site';
+import { emailFlowClient } from '@/lib/supabase/email-flow-client';
+import { siteOrigin } from '@/lib/site';
 
 export default function ForgotPasswordForm() {
   const t = useTranslations('auth');
@@ -17,9 +17,12 @@ export default function ForgotPasswordForm() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const supabase = createClient();
+    // Implicit-flow client → the email link returns the session in the URL hash
+    // (no code_verifier), so it works from any device. Land directly on the
+    // client page, which ingests the hash via detectSessionInUrl.
+    const supabase = emailFlowClient();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: authCallbackUrl('/reset-password'),
+      redirectTo: `${siteOrigin()}/reset-password`,
     });
     setLoading(false);
     if (error) {

@@ -1,0 +1,30 @@
+import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+
+// Token-hash email confirmation (password reset, signup confirm, magic link,
+// email change). Unlike the PKCE `code` exchange, verifyOtp({ token_hash })
+// needs no client-side code_verifier, so the link works from ANY browser or
+// device and survives inbox prefetch quirks. Supabase email templates point
+// here with ?token_hash=...&type=...&next=...
+type EmailOtpType = 'signup' | 'invite' | 'magiclink' | 'recovery' | 'email_change' | 'email';
+
+export async function GET(request: Request) {
+  const { searchParams, origin } = new URL(request.url);
+  const token_hash = searchParams.get('token_hash');
+  const type = searchParams.get('type') as EmailOtpType | null;
+  const next = searchParams.get('next') ?? '/account';
+
+  if (token_hash && type) {
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.verifyOtp({ type, token_hash });
+      if (!error) {
+        return NextResponse.redirect(`${origin}${next}`);
+      }
+    } catch {
+      // fall through to the error redirect
+    }
+  }
+
+  return NextResponse.redirect(`${origin}/login?error=auth_link_invalid`);
+}

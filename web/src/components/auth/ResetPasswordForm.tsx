@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 
-// Reached via the reset link → /auth/callback established a session, then
-// redirected here to set a new password.
+// Reached via the reset link. The implicit-flow email link lands here with the
+// session in the URL hash (#access_token=...); the cookie client's
+// detectSessionInUrl ingests it on mount, establishing the recovery session so
+// updateUser() can set the new password.
 export default function ResetPasswordForm() {
   const t = useTranslations('auth');
   const router = useRouter();
@@ -14,6 +16,12 @@ export default function ResetPasswordForm() {
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Instantiate the client on mount so it parses the URL hash and persists the
+  // recovery session before the user submits.
+  useEffect(() => {
+    createClient();
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

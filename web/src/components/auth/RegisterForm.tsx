@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { createClient } from '@/lib/supabase/client';
-import { authCallbackUrl } from '@/lib/site';
+import { emailFlowClient } from '@/lib/supabase/email-flow-client';
+import { siteOrigin } from '@/lib/site';
 
 export default function RegisterForm() {
   const t = useTranslations('auth');
@@ -23,13 +23,15 @@ export default function RegisterForm() {
       return;
     }
     setLoading(true);
-    const supabase = createClient();
+    // Implicit-flow client so the confirmation email link returns the session in
+    // the URL hash (no code_verifier) and works from any device.
+    const supabase = emailFlowClient();
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { full_name: fullName },
-        emailRedirectTo: authCallbackUrl('/account'),
+        emailRedirectTo: `${siteOrigin()}/account`,
       },
     });
     setLoading(false);
