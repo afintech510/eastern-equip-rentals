@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import LanguageToggle from './LanguageToggle';
+import ThemeSwitcher from './ThemeSwitcher';
 
 // Sticky black header with hazard top-edge, the keystone rotating gear (§4.5),
 // the placeholder wordmark lockup, primary nav, and the "Yard: ONLINE" pill.
@@ -64,12 +65,17 @@ export default function Header() {
               {t('nav.yardOnline')}
             </span>
           </span>
-          <LanguageToggle />
+          {/* Language toggle with the attached color-theme selector below it */}
+          <div className="flex w-44 flex-col">
+            <LanguageToggle />
+            <ThemeSwitcher />
+          </div>
         </nav>
 
-        {/* Mobile: language toggle (nav lives in the bottom bar) */}
-        <div className="md:hidden">
+        {/* Mobile: language + theme controls (nav lives in the bottom bar) */}
+        <div className="flex w-44 flex-col md:hidden">
           <LanguageToggle />
+          <ThemeSwitcher />
         </div>
       </div>
     </header>

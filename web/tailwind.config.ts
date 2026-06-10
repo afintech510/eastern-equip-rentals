@@ -8,7 +8,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        'ind-yellow': '#FFCC00', // CAT / safety yellow — primary action
+        // Primary action color — runtime-swappable via the --ind-yellow CSS
+        // variable (RGB channels so /opacity modifiers keep working). Default
+        // is CAT / safety yellow; see [data-theme] overrides in globals.css.
+        'ind-yellow': 'rgb(var(--ind-yellow) / <alpha-value>)',
         'ind-black': '#111111', // steel / asphalt — text, borders
         'ind-concrete': '#D1D5DB', // page background
         'ind-steel': '#6B7280', // secondary UI / labels

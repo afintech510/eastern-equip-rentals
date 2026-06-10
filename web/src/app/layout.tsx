@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import './globals.css';
@@ -19,6 +20,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang={locale} className={fontVariables}>
+      {/* Apply the saved color theme before paint to avoid a flash (§4.5) */}
+      <Script id="theme-init" strategy="beforeInteractive">
+        {`try{var t=localStorage.getItem('er-theme');if(t){document.documentElement.setAttribute('data-theme',t)}}catch(e){}`}
+      </Script>
       {/* pb-20 md:pb-0 reserves room for the mobile fixed bottom nav (§4.5) */}
       <body className="min-h-screen flex flex-col font-body pb-20 md:pb-0">
         <NextIntlClientProvider messages={messages}>

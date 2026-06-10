@@ -8,6 +8,22 @@
    ============================================================ */
 
 @layer base {
+  /* Interface theme primary — RGB channels, swapped per [data-theme] (§4.5).
+     Default is CAT / safety yellow. The bright primary is the only token that
+     changes; black/concrete/steel stay constant across all themes. */
+  :root {
+    --ind-yellow: 255 204 0;
+  }
+  [data-theme='lime'] {
+    --ind-yellow: 163 230 53;
+  }
+  [data-theme='orange'] {
+    --ind-yellow: 249 115 22;
+  }
+  [data-theme='pink'] {
+    --ind-yellow: 236 72 153;
+  }
+
   /* Concrete-like noise texture on the page background */
   body {
     background-color: #d1d5db;
@@ -27,8 +43,8 @@
   .hazard-stripes {
     background: repeating-linear-gradient(
       -45deg,
-      #ffcc00,
-      #ffcc00 15px,
+      rgb(var(--ind-yellow)),
+      rgb(var(--ind-yellow)) 15px,
       #111111 15px,
       #111111 30px
     );
@@ -131,6 +147,6 @@
   border-left: 4px solid #111111;
 }
 ::-webkit-scrollbar-thumb {
-  background: #ffcc00;
+  background: rgb(var(--ind-yellow));
   border: 4px solid #111111;
 }
