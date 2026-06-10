@@ -1,7 +1,7 @@
 {
   "brand": { "tagline": "Heavy Equipment & Dumpster Rentals" },
   "nav": {
-    "inventory": "Inventory",
+    "inventory": "Equipment",
     "dumpsters": "Dumpsters",
     "activeJobs": "Active Jobs",
     "account": "Account",
