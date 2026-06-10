@@ -61,21 +61,36 @@ function lockupSVG(px, { tile, tagline }) {
   const gScale = GEAR_H / 24;
   const GAP = 56; // gear -> text
   const TITLE = 150;
-  const TAG = 34;
-  const TAG_TRACK = 5;
+  const TRACK_RATIO = 0.1; // tagline tracking as a fraction of its font size
   const textX = GEAR_H + GAP;
 
   // Title baseline placed at an arbitrary Y; measure, then place tagline under it.
   const title = textPath(stencil, 'EASTERN PRO', TITLE, textX, 1000);
+  const titleLeft = title.box.x1;
+  const titleRight = title.box.x2;
+  const titleWidth = titleRight - titleLeft;
+
   let blockTop = title.box.y1;
   let blockBottom = title.box.y2;
 
   let tag = null;
+  let tagDx = 0;
   if (tagline) {
-    const probe = textPath(mono, 'X', TAG, 0, 1000);
-    const ascent = 1000 - probe.box.y1;
-    const tagBaseline = title.box.y2 + 26 + ascent;
-    tag = textPath(mono, 'HEAVY EQUIPMENT RENTALS & DUMPSTERS', TAG, textX, tagBaseline, TAG_TRACK);
+    const TXT = 'HEAVY EQUIPMENT & DUMPSTER RENTALS';
+    const chars = [...TXT];
+    // Size the tagline so its inked width matches the wordmark width: estimate
+    // from advances, then refine against the actual rendered bounding box.
+    let advEm = 0;
+    for (const ch of chars) advEm += mono.charToGlyph(ch).advanceWidth / mono.unitsPerEm;
+    let size = titleWidth / (advEm + TRACK_RATIO * (chars.length - 1));
+    const probe = textPath(mono, TXT, size, textX, 2000, TRACK_RATIO * size);
+    size *= titleWidth / (probe.box.x2 - probe.box.x1);
+
+    const asc = textPath(mono, 'X', size, 0, 1000);
+    const ascent = 1000 - asc.box.y1;
+    const tagBaseline = title.box.y2 + size * 0.22 + ascent;
+    tag = textPath(mono, TXT, size, textX, tagBaseline, TRACK_RATIO * size);
+    tagDx = titleLeft - tag.box.x1; // align tagline left edge to the wordmark
     blockBottom = tag.box.y2;
   }
 
@@ -86,7 +101,7 @@ function lockupSVG(px, { tile, tagline }) {
 
   const minY = Math.min(gearTop, blockTop);
   const maxY = Math.max(gearBottom, blockBottom);
-  const maxX = Math.max(GEAR_H, title.box.x2, tag ? tag.box.x2 : 0);
+  const maxX = Math.max(GEAR_H, titleRight);
 
   const vbX = -PAD;
   const vbY = minY - PAD;
@@ -97,7 +112,9 @@ function lockupSVG(px, { tile, tagline }) {
   const bg = tile
     ? `<rect x="${vbX}" y="${vbY}" width="${vbW}" height="${vbH}" rx="40" fill="${BLACK}"/>`
     : '';
-  const tagEl = tag ? `<path fill="${LIGHT}" d="${tag.d}"/>` : '';
+  const tagEl = tag
+    ? `<path transform="translate(${tagDx} 0)" fill="${LIGHT}" d="${tag.d}"/>`
+    : '';
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${px}" height="${height}" viewBox="${vbX} ${vbY} ${vbW} ${vbH}">
   ${bg}

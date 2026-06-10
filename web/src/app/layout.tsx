@@ -9,9 +9,9 @@ import Footer from '@/components/layout/Footer';
 import MobileNav from '@/components/layout/MobileNav';
 
 export const metadata: Metadata = {
-  title: 'Eastern Pro Rentals — Heavy Equipment Rentals',
+  title: 'Eastern Pro Rentals — Heavy Equipment & Dumpster Rentals',
   description:
-    'Reserve heavy equipment online. Earthmoving, landscaping, and pneumatic iron — dispatch ready.',
+    'Reserve heavy equipment & dumpsters online. Earthmoving, landscaping, and pneumatic iron — dispatch ready.',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
