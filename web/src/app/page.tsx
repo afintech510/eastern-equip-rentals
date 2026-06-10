@@ -7,7 +7,7 @@ import ProductCard from '@/components/catalog/ProductCard';
 // keep it dynamic so newly-activated products/towns appear.
 export const dynamic = 'force-dynamic';
 export const metadata = {
-  title: 'Eastern Rentals — Heavy Equipment & Dumpster Rentals, Center Moriches NY',
+  title: 'Eastern Pro Rentals — Heavy Equipment & Dumpster Rentals, Center Moriches NY',
   description:
     'Reserve skid steers, mini excavators, chippers and 20-yard roll-off dumpsters online. Pickup in Center Moriches or delivery within 40 miles.',
 };

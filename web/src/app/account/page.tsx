@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import AccountClient from '@/components/account/AccountClient';
 
-export const metadata = { title: 'Account — Eastern Rentals' };
+export const metadata = { title: 'Account — Eastern Pro Rentals' };
 export const dynamic = 'force-dynamic';
 
 // Auth-gated console: profile, license upload, and rentals (F-012/13).

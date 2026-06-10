@@ -8,7 +8,7 @@ import Footer from '@/components/layout/Footer';
 import MobileNav from '@/components/layout/MobileNav';
 
 export const metadata: Metadata = {
-  title: 'Eastern Rentals — Heavy Equipment Rentals',
+  title: 'Eastern Pro Rentals — Heavy Equipment Rentals',
   description:
     'Reserve heavy equipment online. Earthmoving, landscaping, and pneumatic iron — dispatch ready.',
 };

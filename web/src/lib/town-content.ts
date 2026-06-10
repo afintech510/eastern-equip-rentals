@@ -39,7 +39,7 @@ export function townContent(t: Town): TownContent {
       : 'a short drive from our Center Moriches yard';
 
   return {
-    title: `Equipment Rental in ${t.name}, NY | Eastern Rentals`,
+    title: `Equipment Rental in ${t.name}, NY | Eastern Pro Rentals`,
     metaDescription: `Rent skid steers, a mini excavator, a wood chipper, trailers, and roll-off dumpsters in ${t.name}, NY. Online booking, delivery or pickup. ${dist}.`,
     hero: `Heavy Equipment Rental — ${t.name}, NY`,
     intro: angle,
@@ -55,7 +55,7 @@ export function localBusinessJsonLd(t: Town, baseUrl: string) {
   return {
     '@context': 'https://schema.org',
     '@type': 'EquipmentRentalAgency',
-    name: 'Eastern Rentals',
+    name: 'Eastern Pro Rentals',
     description: `Heavy equipment rentals serving ${t.name}, NY and the Moriches area.`,
     url: `${baseUrl}/rent/${t.slug}`,
     areaServed: { '@type': 'City', name: `${t.name}, NY` },

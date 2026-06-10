@@ -26,7 +26,7 @@ export async function generateMetadata({
       openGraph: { title: c.title, description: c.metaDescription, url: `${BASE}/rent/${t.slug}` },
     };
   } catch {
-    return { title: 'Equipment Rental | Eastern Rentals' };
+    return { title: 'Equipment Rental | Eastern Pro Rentals' };
   }
 }
 

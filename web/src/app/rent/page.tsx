@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 const BASE = process.env.NEXT_PUBLIC_BASE_URL || 'https://rentals.benchworksai.com';
 
 export const metadata: Metadata = {
-  title: 'Equipment Rental Service Areas | Eastern Rentals',
+  title: 'Equipment Rental Service Areas | Eastern Pro Rentals',
   description:
     'Heavy equipment rentals across the Moriches area: Center Moriches, Mastic, Mastic Beach, East Moriches, Manorville, Eastport, Shirley, and Moriches.',
   alternates: { canonical: `${BASE}/rent` },

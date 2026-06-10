@@ -13,7 +13,7 @@ export default function Header() {
       <div className="h-2 w-full hazard-stripes" aria-hidden="true" />
 
       <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-4" aria-label="Eastern Rentals — home">
+        <Link href="/" className="flex items-center gap-4" aria-label="Eastern Pro Rentals — home">
           {/* Industrial gear — decorative, keystone motif (10s linear spin) */}
           <svg
             width="40"
@@ -28,7 +28,7 @@ export default function Header() {
           <span className="flex flex-col">
             {/* Placeholder wordmark — final logo asset pending (§7 SOW) */}
             <span className="font-stencil text-3xl md:text-4xl leading-none tracking-widest text-ind-yellow">
-              EASTERN
+              EASTERN PRO
             </span>
             <span className="font-mono text-sm font-bold uppercase tracking-[0.2em] text-ind-white">
               {t('brand.tagline')}

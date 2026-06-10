@@ -5,7 +5,7 @@ import ProductCard from '@/components/catalog/ProductCard';
 
 export const dynamic = 'force-dynamic';
 export const metadata = {
-  title: '20-Yard Roll-Off Dumpster Rentals — Eastern Rentals, Center Moriches NY',
+  title: '20-Yard Roll-Off Dumpster Rentals — Eastern Pro Rentals, Center Moriches NY',
   description:
     'Flat-rate 20-yard roll-off dumpster rentals. $850 includes up to 10 tons and 2 weeks on site. Delivery and pickup within 40 miles of Center Moriches.',
 };

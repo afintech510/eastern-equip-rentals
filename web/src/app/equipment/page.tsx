@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { getProducts, type Product } from '@/lib/api';
 import ProductCard from '@/components/catalog/ProductCard';
 
-export const metadata = { title: 'Equipment Roster — Eastern Rentals' };
+export const metadata = { title: 'Equipment Roster — Eastern Pro Rentals' };
 // Catalog reads the API; keep it dynamic so newly-activated products appear.
 export const dynamic = 'force-dynamic';
 
